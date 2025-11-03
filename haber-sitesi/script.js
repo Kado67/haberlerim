@@ -1,141 +1,149 @@
-// Elemanlar
+// SEKME VE ALANLAR
 const tabs = document.querySelectorAll(".tab");
 const feedTitle = document.getElementById("feedTitle");
-const feed = document.getElementById("feed");
-const searchInput = document.getElementById("q");
-const searchBtn = document.getElementById("searchBtn");
+const feedBox = document.getElementById("feed");
+const errorBox = document.getElementById("errorBox");
 
-// Senin API key
-const API_KEY = "pub_041412110a0644cfb63307b53c733b41";
+// 1) SADECE GÜNDEM API'DEN
+const NEWSDATA_API_KEY = "pub_ee04dcfcf6b54339b4bc667b529dea62";
+const GUNDEM_URL =
+  `https://newsdata.io/api/1/latest?apikey=${NEWSDATA_API_KEY}&country=tr&language=tr&category=top`;
 
-// Her sekmenin arama kelimesi
-const CATEGORY_QUERY = {
-  gundem: { title: "Gündem", q: null },           // sadece TR genel
-  spor: { title: "Spor", q: "spor" },
-  teknoloji: { title: "Teknoloji", q: "teknoloji" },
-  magazin: { title: "Magazin", q: "magazin" },
-  sağlık: { title: "Sağlık", q: "sağlık" },
-  saglik: { title: "Sağlık", q: "sağlık" },        // ihtiyaten
-  bilim: { title: "Bilim", q: "bilim" },
+// 2) DİĞERLERİ RSS'TEN (rss2json ile)
+const RSS_SOURCES = {
+  spor: "https://www.trthaber.com/rss/spor.rss",
+  teknoloji: "https://www.trthaber.com/rss/bilim-teknik.rss",
+  magazin: "https://www.trthaber.com/rss/kultur-sanat.rss",
+  saglik: "https://www.trthaber.com/rss/saglik.rss",
+  bilim: "https://www.trthaber.com/rss/bilim-teknik.rss"
+  // istersen buraya başka kaynaklar da ekleyebiliriz
 };
 
-// Haberleri ekrana bas
-function renderNews(list, titleText) {
-  feedTitle.textContent = titleText;
-  feed.innerHTML = list
-    .slice(0, 12)
-    .map((item) => {
-      const img = item.image_url
-        ? `<div class="news-img"><img src="${item.image_url}" alt=""></div>`
-        : `<div class="news-img"></div>`;
-      return `
-        <a href="${item.link}" target="_blank" rel="noopener" class="news-card">
-          ${img}
-          <div class="news-content">
-            <h3>${item.title || "Başlık yok"}</h3>
-            <div class="meta">
-              ${item.source_id || ""} • ${item.pubDate || ""}
-            </div>
-          </div>
-        </a>
-      `;
-    })
-    .join("");
-}
-
-// Güvenli fetch
-async function fetchSafe(url) {
-  const res = await fetch(url);
-  const data = await res.json();
-  return data.results || [];
-}
-
-// Sekme yükleyici
-async function loadCategory(key = "gundem") {
-  key = key.toLowerCase().replace("ı", "i"); // teknoloji / saglik için
-  const cfg = CATEGORY_QUERY[key];
-  if (!cfg) return;
-
-  feedTitle.textContent = cfg.title;
-  feed.innerHTML = "<p style='margin:10px 14px'>Yükleniyor...</p>";
-
-  try {
-    let results;
-
-    if (cfg.q) {
-      // önce TR + kelime
-      const urlTr = `https://newsdata.io/api/1/news?apikey=${API_KEY}&language=tr&q=${encodeURIComponent(
-        cfg.q
-      )}`;
-      results = await fetchSafe(urlTr);
-
-      // TR boşsa dilsiz aynı kelime
-      if (!results || results.length === 0) {
-        const urlAny = `https://newsdata.io/api/1/news?apikey=${API_KEY}&q=${encodeURIComponent(
-          cfg.q
-        )}`;
-        results = await fetchSafe(urlAny);
-      }
-    } else {
-      // gündem
-      const urlTr = `https://newsdata.io/api/1/news?apikey=${API_KEY}&country=tr&language=tr`;
-      results = await fetchSafe(urlTr);
-    }
-
-    if (!results || results.length === 0) {
-      feed.innerHTML = "<p style='margin:10px 14px'>Bu kategoride haber bulunamadı.</p>";
-      return;
-    }
-
-    renderNews(results, cfg.title);
-  } catch (err) {
-    console.error(err);
-    feed.innerHTML = "<p style='margin:10px 14px'>Haberler yüklenemedi.</p>";
+// EKRANI TEMİZLE
+function clearFeed() {
+  feedBox.innerHTML = "";
+  if (errorBox) {
+    errorBox.textContent = "";
+    errorBox.style.display = "none";
   }
 }
 
-// Sekme tıklama
-tabs.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const key =
-      (btn.dataset.cat || btn.textContent.trim().toLowerCase()).replace("ı", "i");
-    tabs.forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-    loadCategory(key);
+// HABER KARTI ÇİZ
+function renderItems(items, from = "api") {
+  clearFeed();
+
+  if (!items || items.length === 0) {
+    feedBox.innerHTML = "<p>Bu kategoride haber bulunamadı.</p>";
+    return;
+  }
+
+  items.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "news-card";
+
+    const imgUrl =
+      item.image_url ||
+      item.enclosure?.link ||
+      item.thumbnail ||
+      "";
+
+    card.innerHTML = `
+      ${imgUrl ? `<img class="news-img" src="${imgUrl}" alt="">` : ""}
+      <div class="news-content">
+        <h3>${item.title || item?.title?.rendered || "Başlık yok"}</h3>
+        <p class="meta">
+          ${(item.source_id || item.author || "kaynak")} • ${(item.pubDate || item.published_at || item.pubDate?.split(" ")[0] || "")}
+        </p>
+        <p class="desc">${item.description ? item.description.slice(0, 140) + "..." : ""}</p>
+        <a class="read-more" href="${item.link || item.url}" target="_blank" rel="noopener noreferrer">Habere git</a>
+      </div>
+    `;
+    feedBox.appendChild(card);
+  });
+}
+
+// GÜNDEMİ API'DEN ÇEK
+async function loadGundem() {
+  try {
+    feedTitle.textContent = "Gündem";
+    clearFeed();
+    const res = await fetch(GUNDEM_URL);
+    const data = await res.json();
+    // newsdata.io sonuçları data.results içinde
+    renderItems(data.results || []);
+  } catch (err) {
+    console.error(err);
+    if (errorBox) {
+      errorBox.textContent = "Gündem yüklenemedi (API hatası)";
+      errorBox.style.display = "block";
+    }
+  }
+}
+
+// RSS ÇEKEN FONKSİYON
+async function loadRss(categoryKey) {
+  const rssUrl = RSS_SOURCES[categoryKey];
+  if (!rssUrl) {
+    feedBox.innerHTML = "<p>Bu kategori için RSS tanımlı değil.</p>";
+    return;
+  }
+
+  // rss2json servisi ile CORS’u aş
+  const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+
+  try {
+    clearFeed();
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+
+    // rss2json verileri data.items içinde
+    const items = (data.items || []).map((it) => ({
+      title: it.title,
+      link: it.link,
+      description: it.description,
+      pubDate: it.pubDate,
+      image_url: it.enclosure ? it.enclosure.link : "",
+      source_id: data.feed ? data.feed.title : ""
+    }));
+
+    renderItems(items);
+  } catch (err) {
+    console.error(err);
+    if (errorBox) {
+      errorBox.textContent = "RSS yüklenemedi (servis hatası)";
+      errorBox.style.display = "block";
+    }
+  }
+}
+
+// SEKME TIKLAMALARI
+tabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    // aktif sekmeyi değiştir
+    tabs.forEach((t) => t.classList.remove("active"));
+    tab.classList.add("active");
+
+    // data-cat Türkçe karakter olabilir, normalize edelim
+    const cat = (tab.dataset.cat || "").toLowerCase();
+
+    if (cat === "gündem" || cat === "gundem") {
+      feedTitle.textContent = "Gündem";
+      loadGundem(); // SADECE BURADA API
+    } else {
+      // diğerleri RSS
+      feedTitle.textContent = tab.textContent.trim();
+      // türkçe karakterleri key'e uyduralım
+      const key = cat
+        .replace("ğ", "g")
+        .replace("ü", "u")
+        .replace("ş", "s")
+        .replace("ı", "i")
+        .replace("ö", "o")
+        .replace("ç", "c");
+      loadRss(key);
+    }
   });
 });
 
-// Arama
-searchBtn.addEventListener("click", async () => {
-  const q = searchInput.value.trim();
-  if (!q) return;
-
-  feedTitle.textContent = `"${q}" araması`;
-  feed.innerHTML = "<p style='margin:10px 14px'>Yükleniyor...</p>";
-
-  try {
-    let results = await fetchSafe(
-      `https://newsdata.io/api/1/news?apikey=${API_KEY}&language=tr&q=${encodeURIComponent(
-        q
-      )}`
-    );
-
-    if (!results || results.length === 0) {
-      results = await fetchSafe(
-        `https://newsdata.io/api/1/news?apikey=${API_KEY}&q=${encodeURIComponent(q)}`
-      );
-    }
-
-    if (!results || results.length === 0) {
-      feed.innerHTML = "<p style='margin:10px 14px'>Sonuç bulunamadı.</p>";
-      return;
-    }
-
-    renderNews(results, `"${q}" araması`);
-  } catch (e) {
-    feed.innerHTML = "<p style='margin:10px 14px'>Arama sırasında hata oluştu.</p>";
-  }
-});
-
-// açılış
-loadCategory("gundem");
+// SAYFA AÇILINCA ÖNCE GÜNDEM
+loadGundem();
