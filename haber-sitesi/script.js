@@ -1,134 +1,140 @@
-// SEKME BUTONLARI
-const tabs = document.querySelectorAll(".tab, nav button, .categories button");
-const feedTitle = document.getElementById("feedTitle");
-const feed = document.getElementById("feed");
-const searchInput = document.getElementById("q");
-const searchBtn = document.getElementById("searchBtn");
-
-// 1) HER KATEGORİYE BİR RSS
+// KATEGORİ → RSS ADRESLERİ
 const RSS_SOURCES = {
-  gundem: "https://www.trthaber.com/rss/gundem.rss",
-  spor: "https://www.trthaber.com/rss/spor.rss",
-  teknoloji: "https://www.haberturk.com/rss/teknoloji.xml",
-  magazin: "https://www.sozcu.com.tr/rss/magazin.xml",
-  saglik: "https://www.trthaber.com/rss/saglik.rss",
-  bilim: "https://www.ntv.com.tr/bilim-teknoloji.rss"
+  gundem: [
+    "https://www.trthaber.com/rss/gundem.rss",
+    "https://www.cnnturk.com/feed/rss/category/news"
+  ],
+  spor: [
+    "https://www.trthaber.com/rss/spor.rss",
+    "https://www.cnnturk.com/feed/rss/category/spor"
+  ],
+  teknoloji: [
+    "https://www.trthaber.com/rss/bilim-teknoloji.rss"
+  ],
+  magazin: [
+    "https://www.trthaber.com/rss/kultur-sanat.rss"
+  ],
+  saglik: [
+    "https://www.trthaber.com/rss/saglik.rss"
+  ],
+  bilim: [
+    "https://www.trthaber.com/rss/bilim-teknoloji.rss"
+  ]
 };
 
-// 2) RSS İNDİREN FONKSİYON
-async function loadCategory(category = "gundem") {
-  const rssUrl = RSS_SOURCES[category];
-  feed.innerHTML = "Yükleniyor...";
-  feedTitle.textContent = categoryName(category);
+// İngilizce gelenleri Türkçeye çevir (emin olmak için)
+const CATEGORY_MAP = {
+  news: "gundem",
+  agenda: "gundem",
+  sports: "spor",
+  sport: "spor",
+  technology: "teknoloji",
+  tech: "teknoloji",
+  magazine: "magazin",
+  health: "saglik",
+  science: "bilim"
+};
 
-  if (!rssUrl) {
-    feed.innerHTML = "<p>Bu kategori için RSS tanımlı değil.</p>";
+const tabs = document.querySelectorAll("[data-cat]");
+const feedTitle = document.getElementById("feedTitle");
+const feed = document.getElementById("feed");
+const errorBox = document.getElementById("error") || null;
+
+// basit bir yardımcı: hata göster
+function showError(msg) {
+  if (!errorBox) return;
+  errorBox.textContent = msg;
+  errorBox.style.display = "block";
+}
+function hideError() {
+  if (!errorBox) return;
+  errorBox.style.display = "none";
+}
+
+// RSS'i çekip listeye basan ana fonksiyon
+async function loadCategory(cat) {
+  hideError();
+
+  // İngilizce isim geldiyse çevir
+  const realCat = CATEGORY_MAP[cat] || cat;
+
+  // bu kategori için kayıtlı RSS yoksa
+  if (!RSS_SOURCES[realCat] || RSS_SOURCES[realCat].length === 0) {
+    feedTitle.textContent = capitalize(realCat);
+    feed.innerHTML = `<p>Bu kategori için RSS tanımlı değil.</p>`;
     return;
   }
 
-  try {
-    // Ücretsiz, keysiz rss2json kullanımı
-    const apiUrl =
-      "https://api.rss2json.com/v1/api.json?rss_url=" +
-      encodeURIComponent(rssUrl);
+  feedTitle.textContent = capitalize(realCat);
+  feed.innerHTML = `<p style="opacity:.6">Yükleniyor...</p>`;
 
-    const res = await fetch(apiUrl);
-    const data = await res.json();
+  const urls = RSS_SOURCES[realCat];
 
-    if (!data.items || data.items.length === 0) {
-      feed.innerHTML = "<p>Bu kategori için haber alınamadı.</p>";
-      return;
+  // sırayla dene: ilk çalışanı kullan
+  let data = null;
+  for (let rssUrl of urls) {
+    try {
+      // açık bir JSON dönüştürücü kullanıyoruz
+      const resp = await fetch(
+        "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(rssUrl)
+      );
+      if (!resp.ok) continue;
+      const json = await resp.json();
+      if (json && json.items && json.items.length > 0) {
+        data = json;
+        break;
+      }
+    } catch (e) {
+      // sıradaki url'yi dene
+      continue;
     }
-
-    // İlk 10 haberi göster
-    const items = data.items.slice(0, 10);
-
-    feed.innerHTML = items
-      .map((item) => createNewsCard(item))
-      .join("");
-  } catch (err) {
-    console.error(err);
-    feed.innerHTML = "<p>RSS yüklenemedi (servis hatası)</p>";
   }
+
+  if (!data) {
+    feed.innerHTML = "";
+    showError("Haberler alınamadı (RSS ulaşılamıyor).");
+    return;
+  }
+
+  // listeyi çiz
+  feed.innerHTML = data.items
+    .slice(0, 10) // en fazla 10 haber
+    .map(item => {
+      const pub = item.pubDate ? item.pubDate.split(" ")[0] : "";
+      const img =
+        item.thumbnail && item.thumbnail.length
+          ? item.thumbnail
+          : "";
+      return `
+        <article class="news-card">
+          ${img ? `<img src="${img}" alt="" class="news-img" />` : ""}
+          <div class="news-body">
+            <h3>${item.title}</h3>
+            <p class="meta">${item.author || data.feed.title} • ${pub}</p>
+            <p class="desc">${(item.description || "").slice(0, 140)}...</p>
+            <a href="${item.link}" target="_blank" class="read-more">Habere git</a>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
 }
 
-// 3) HABER KARTI HTML’İ
-function createNewsCard(item) {
-  const img =
-    item.enclosure && item.enclosure.link
-      ? item.enclosure.link
-      : item.thumbnail
-      ? item.thumbnail
-      : "";
-
-  const pub = item.pubDate ? formatDate(item.pubDate) : "";
-
-  return `
-    <article class="news-card">
-      ${img ? `<img src="${img}" alt="">` : ""}
-      <div class="news-body">
-        <h3>${item.title}</h3>
-        <p class="meta">${item.author || item.source || ""} • ${pub}</p>
-        ${
-          item.description
-            ? `<p class="desc">${item.description.slice(0, 140)}...</p>`
-            : ""
-        }
-        <a href="${item.link}" target="_blank">Habere git</a>
-      </div>
-    </article>
-  `;
+// baş harf büyütme
+function capitalize(str) {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-// 4) SEKME TIKLAMA
-tabs.forEach((btn) => {
+// sekmelere tıklandığında
+tabs.forEach(btn => {
   btn.addEventListener("click", () => {
-    const cat =
-      btn.dataset.cat ||
-      btn.getAttribute("data-cat") ||
-      btn.textContent.toLowerCase();
-
-    // aktif class
-    tabs.forEach((b) => b.classList.remove("active"));
+    tabs.forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
-
+    const cat = btn.dataset.cat;
     loadCategory(cat);
   });
 });
 
-// 5) ARAMA (RSS içinden basit arama)
-searchBtn?.addEventListener("click", () => {
-  const q = (searchInput?.value || "").toLowerCase();
-  if (!q) return;
-  // basit çözüm: mevcut listeden filtrele
-  const cards = feed.querySelectorAll(".news-card");
-  cards.forEach((card) => {
-    const text = card.textContent.toLowerCase();
-    card.style.display = text.includes(q) ? "" : "none";
-  });
-});
-
-// ARAÇLAR
-function categoryName(key) {
-  const map = {
-    gundem: "Gündem",
-    spor: "Spor",
-    teknoloji: "Teknoloji",
-    magazin: "Magazin",
-    saglik: "Sağlık",
-    bilim: "Bilim"
-  };
-  return map[key] || key;
-}
-
-function formatDate(d) {
-  try {
-    const date = new Date(d);
-    return date.toLocaleString("tr-TR");
-  } catch {
-    return d;
-  }
-}
-
-// SAYFA AÇILINCA GÜNDEMİ YÜKLE
+// ilk açılışta GÜNDEM
 loadCategory("gundem");
