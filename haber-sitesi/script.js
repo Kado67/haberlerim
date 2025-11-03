@@ -96,3 +96,32 @@ async function searchNews(query) {
 
 // İlk yükleme
 loadCategory("top");
+async function getRssNews() {
+  const url = 'https://api.rss2json.com/v1/api.json?rss_url=https://www.trthaber.com/rss/gundem.rss';
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const list = document.getElementById('rss-haberler');
+    if (!list) return;
+    list.innerHTML = '<h2>📰 RSS Haberleri</h2>';
+
+    data.items.slice(0, 6).forEach(item => {
+      const box = document.createElement('div');
+      box.style.borderBottom = "1px solid #444";
+      box.style.marginBottom = "10px";
+      box.style.padding = "10px 0";
+      box.innerHTML = `
+        <h3 style="margin:0;">${item.title}</h3>
+        <small>${new Date(item.pubDate).toLocaleString('tr-TR')}</small><br>
+        <a href="${item.link}" target="_blank" style="color:#2196F3;">Haberi oku</a>
+      `;
+      list.appendChild(box);
+    });
+  } catch (err) {
+    console.error('RSS yüklenemedi:', err);
+  }
+}
+
+getRssNews();
