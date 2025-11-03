@@ -1,140 +1,144 @@
-// KATEGORİ → RSS ADRESLERİ
-const RSS_SOURCES = {
-  gundem: [
-    "https://www.trthaber.com/rss/gundem.rss",
-    "https://www.cnnturk.com/feed/rss/category/news"
-  ],
-  spor: [
-    "https://www.trthaber.com/rss/spor.rss",
-    "https://www.cnnturk.com/feed/rss/category/spor"
-  ],
-  teknoloji: [
-    "https://www.trthaber.com/rss/bilim-teknoloji.rss"
-  ],
-  magazin: [
-    "https://www.trthaber.com/rss/kultur-sanat.rss"
-  ],
-  saglik: [
-    "https://www.trthaber.com/rss/saglik.rss"
-  ],
-  bilim: [
-    "https://www.trthaber.com/rss/bilim-teknoloji.rss"
-  ]
-};
-
-// İngilizce gelenleri Türkçeye çevir (emin olmak için)
-const CATEGORY_MAP = {
-  news: "gundem",
-  agenda: "gundem",
-  sports: "spor",
-  sport: "spor",
-  technology: "teknoloji",
-  tech: "teknoloji",
-  magazine: "magazin",
-  health: "saglik",
-  science: "bilim"
-};
-
-const tabs = document.querySelectorAll("[data-cat]");
+// Kategoriler
+const tabs = document.querySelectorAll(".tab");
 const feedTitle = document.getElementById("feedTitle");
 const feed = document.getElementById("feed");
-const errorBox = document.getElementById("error") || null;
+const searchInput = document.getElementById("q");
+const searchBtn = document.getElementById("searchBtn");
 
-// basit bir yardımcı: hata göster
-function showError(msg) {
-  if (!errorBox) return;
-  errorBox.textContent = msg;
-  errorBox.style.display = "block";
-}
-function hideError() {
-  if (!errorBox) return;
-  errorBox.style.display = "none";
-}
+// Her kategoriye bir RSS tanımlıyoruz
+const RSS_SOURCES = {
+  gundem: "https://www.trthaber.com/rss/gundem.rss",
+  spor: "https://www.trthaber.com/rss/spor.rss",
+  teknoloji: "https://www.trthaber.com/rss/bilim-teknoloji.rss",
+  magazin: "https://www.trthaber.com/rss/kultur-sanat.rss",
+  saglik: "https://www.trthaber.com/rss/yasam.rss",
+  bilim: "https://www.trthaber.com/rss/bilim-teknoloji.rss"
+};
 
-// RSS'i çekip listeye basan ana fonksiyon
-async function loadCategory(cat) {
-  hideError();
+// Ekranda tutacağımız son haberler (arama için)
+let currentItems = [];
 
-  // İngilizce isim geldiyse çevir
-  const realCat = CATEGORY_MAP[cat] || cat;
+// RSS çekme fonksiyonu
+async function loadCategory(category = "gundem") {
+  // Sekme aktifliği
+  tabs.forEach((t) => t.classList.remove("active"));
+  const activeTab = Array.from(tabs).find(
+    (t) => t.dataset.cat === category
+  );
+  if (activeTab) activeTab.classList.add("active");
 
-  // bu kategori için kayıtlı RSS yoksa
-  if (!RSS_SOURCES[realCat] || RSS_SOURCES[realCat].length === 0) {
-    feedTitle.textContent = capitalize(realCat);
-    feed.innerHTML = `<p>Bu kategori için RSS tanımlı değil.</p>`;
+  // Başlık
+  feedTitle.textContent =
+    category.charAt(0).toUpperCase() + category.slice(1);
+
+  // RSS var mı?
+  const rssUrl = RSS_SOURCES[category];
+  if (!rssUrl) {
+    feed.innerHTML =
+      '<p style="padding:1rem;color:#fff;">Bu kategori için RSS tanımlı değil.</p>';
+    currentItems = [];
     return;
   }
 
-  feedTitle.textContent = capitalize(realCat);
-  feed.innerHTML = `<p style="opacity:.6">Yükleniyor...</p>`;
+  // Yükleniyor göster
+  feed.innerHTML =
+    '<p style="padding:1rem;color:#fff;">Yükleniyor...</p>';
 
-  const urls = RSS_SOURCES[realCat];
+  try {
+    // allorigins ile CORS sorununu aşarak RSS çekiyoruz
+    const resp = await fetch(
+      "https://api.allorigins.win/get?url=" + encodeURIComponent(rssUrl)
+    );
+    const data = await resp.json();
 
-  // sırayla dene: ilk çalışanı kullan
-  let data = null;
-  for (let rssUrl of urls) {
-    try {
-      // açık bir JSON dönüştürücü kullanıyoruz
-      const resp = await fetch(
-        "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(rssUrl)
-      );
-      if (!resp.ok) continue;
-      const json = await resp.json();
-      if (json && json.items && json.items.length > 0) {
-        data = json;
-        break;
-      }
-    } catch (e) {
-      // sıradaki url'yi dene
-      continue;
-    }
+    // XML parse
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(data.contents, "text/xml");
+    const items = xml.querySelectorAll("item");
+
+    const parsed = [];
+    items.forEach((item) => {
+      parsed.push({
+        title: item.querySelector("title")?.textContent || "Başlık yok",
+        link: item.querySelector("link")?.textContent || "#",
+        desc:
+          item.querySelector("description")?.textContent ||
+          "",
+        date: item.querySelector("pubDate")?.textContent || "",
+        source:
+          xml.querySelector("channel > title")?.textContent ||
+          "kaynak"
+      });
+    });
+
+    currentItems = parsed;
+    renderList(parsed);
+  } catch (err) {
+    console.error(err);
+    feed.innerHTML =
+      '<p style="padding:1rem;color:#fff;">RSS yüklenemedi (servis hatası)</p>';
+    currentItems = [];
   }
+}
 
-  if (!data) {
-    feed.innerHTML = "";
-    showError("Haberler alınamadı (RSS ulaşılamıyor).");
+// Listeyi ekrana basma
+function renderList(list) {
+  if (!list || list.length === 0) {
+    feed.innerHTML =
+      '<p style="padding:1rem;color:#fff;">Haber bulunamadı.</p>';
     return;
   }
 
-  // listeyi çiz
-  feed.innerHTML = data.items
-    .slice(0, 10) // en fazla 10 haber
-    .map(item => {
-      const pub = item.pubDate ? item.pubDate.split(" ")[0] : "";
-      const img =
-        item.thumbnail && item.thumbnail.length
-          ? item.thumbnail
-          : "";
+  const html = list
+    .slice(0, 20) // çok uzamasın
+    .map((item) => {
+      const dateText = item.date ? item.date : "";
+      const sourceText = item.source ? item.source : "";
       return `
         <article class="news-card">
-          ${img ? `<img src="${img}" alt="" class="news-img" />` : ""}
-          <div class="news-body">
-            <h3>${item.title}</h3>
-            <p class="meta">${item.author || data.feed.title} • ${pub}</p>
-            <p class="desc">${(item.description || "").slice(0, 140)}...</p>
-            <a href="${item.link}" target="_blank" class="read-more">Habere git</a>
-          </div>
+          <h3>${item.title}</h3>
+          <p class="meta">${sourceText} • ${dateText}</p>
+          <p class="desc">${item.desc.slice(0, 150)}...</p>
+          <a href="${item.link}" target="_blank" rel="noopener">Habere git</a>
         </article>
       `;
     })
     .join("");
+
+  feed.innerHTML = html;
 }
 
-// baş harf büyütme
-function capitalize(str) {
-  if (!str) return "";
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-// sekmelere tıklandığında
-tabs.forEach(btn => {
-  btn.addEventListener("click", () => {
-    tabs.forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    const cat = btn.dataset.cat;
+// Sekmelere tıklama
+tabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    const cat = tab.dataset.cat;
     loadCategory(cat);
   });
 });
 
-// ilk açılışta GÜNDEM
+// Arama
+function doSearch() {
+  const q = (searchInput.value || "").toLowerCase().trim();
+  if (!q) {
+    renderList(currentItems);
+    return;
+  }
+  const filtered = currentItems.filter(
+    (item) =>
+      item.title.toLowerCase().includes(q) ||
+      item.desc.toLowerCase().includes(q)
+  );
+  renderList(filtered);
+}
+
+if (searchBtn) {
+  searchBtn.addEventListener("click", doSearch);
+}
+if (searchInput) {
+  searchInput.addEventListener("keyup", (e) => {
+    if (e.key === "Enter") doSearch();
+  });
+}
+
+// Sayfa açılınca Gündem gelsin
 loadCategory("gundem");
