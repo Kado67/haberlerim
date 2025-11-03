@@ -1,105 +1,99 @@
-// Sekmeler
 const tabs = document.querySelectorAll(".tab");
 const feedTitle = document.getElementById("feedTitle");
 const feed = document.getElementById("feed");
-const errorBox = document.getElementById("errorBox");
+const searchInput = document.getElementById("q");
+const searchBtn = document.getElementById("searchBtn");
 
-// BURAYA SENİN NEWSDATA.IO API ANAHTARIN
+// 🔑 Senin NewsData API key’in
 const API_KEY = "pub_041412110a0644cfb63307b53c733b41";
 
-// Newsdata kategorilerini bizim sekmelere bağla
-// (senin sekmelerin: gundem, spor, teknoloji, magazin, sağlik, bilim)
-const CATEGORY_MAP = {
-  gundem: "top",
-  spor: "sports",
-  teknoloji: "technology",
-  magazin: "entertainment",
-  sağlik: "health",
-  bilim: "science"
-};
+// 📰 Kategoriye göre haberleri yükle
+async function loadCategory(category = "top") {
+  const trNames = {
+    top: "Gündem",
+    sports: "Spor",
+    technology: "Teknoloji",
+    entertainment: "Magazin",
+    health: "Sağlık",
+    science: "Bilim",
+  };
 
-// haberleri ekrana basan fonksiyon
-function renderNews(articles = []) {
-  // hiç haber yoksa
-  if (!articles.length) {
-    feed.innerHTML = "<p>Bu kategoride haber bulunamadı.</p>";
-    return;
-  }
+  feedTitle.textContent = trNames[category] || "Haberler";
 
-  feed.innerHTML = articles
-    .map((item) => {
-      const title = item.title || "Haber başlığı yok";
-      const link = item.link || item.url || "#";
-      const source = item.source_id || item.source || "";
-      const date = item.pubDate || item.pub_date || "";
-      const img = item.image_url || item.image || "";
-
-      return `
-        <a class="news-card" href="${link}" target="_blank" rel="noopener">
-          <div class="news-thumb">
-            ${
-              img
-                ? `<img src="${img}" alt="${title}" />`
-                : `<div class="no-img"></div>`
-            }
-          </div>
-          <div class="news-body">
-            <h3>${title}</h3>
-            <p class="meta">
-              ${source ? source : ""} ${date ? " • " + date : ""}
-            </p>
-          </div>
-        </a>
-      `;
-    })
-    .join("");
-}
-
-// api'den haber çeken fonksiyon
-async function loadCategory(cat = "gundem") {
-  // kullanacağımız newsdata kategorisi
-  const ndCat = CATEGORY_MAP[cat] || "top";
-  const url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&language=tr&country=tr&category=${ndCat}`;
-
-  // başlığı değiştir
-  if (feedTitle) {
-    feedTitle.textContent =
-      cat.charAt(0).toUpperCase() + cat.slice(1) + "";
-  }
-
-  // hata kutusunu sakla
-  if (errorBox) errorBox.style.display = "none";
+  const url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&country=tr&language=tr&category=${category}`;
 
   try {
     const res = await fetch(url);
     const data = await res.json();
 
-    if (data.status !== "success") {
-      throw new Error("API hata döndürdü");
+    if (!data.results || data.results.length === 0) {
+      feed.innerHTML = "<p>Bu kategoride haber bulunamadı.</p>";
+      return;
     }
 
-    const results = data.results || data.articles || [];
-    renderNews(results);
+    feed.innerHTML = data.results
+      .slice(0, 10)
+      .map((item) => {
+        const img = item.image_url
+          ? `<div class="news-thumb"><img src="${item.image_url}" alt=""></div>`
+          : `<div class="news-thumb"><div class="no-img"></div></div>`;
+        return `
+          <a class="news-card" href="${item.link}" target="_blank" rel="noopener">
+            ${img}
+            <div class="news-body">
+              <h3>${item.title || "Başlık yok"}</h3>
+              <div class="meta">
+                ${item.source_id || ""} • ${item.pubDate || ""}
+              </div>
+            </div>
+          </a>
+        `;
+      })
+      .join("");
   } catch (err) {
     console.error(err);
-    if (errorBox) {
-      errorBox.textContent = "Haberler yüklenemedi (API / servis hatası)";
-      errorBox.style.display = "block";
-    }
-    feed.innerHTML = "";
+    feed.innerHTML = "<p>Haberler yüklenemedi (servis hatası).</p>";
   }
 }
 
-// sekme tıklamaları
-tabs.forEach((tab) => {
-  tab.addEventListener("click", () => {
-    tabs.forEach((t) => t.classList.remove("active"));
-    tab.classList.add("active");
+// 🔍 Arama işlevi
+searchBtn.addEventListener("click", async () => {
+  const query = searchInput.value.trim();
+  if (!query) return;
+  const url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&country=tr&language=tr&q=${encodeURIComponent(
+    query
+  )}`;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    feedTitle.textContent = `"${query}" için sonuçlar`;
+    feed.innerHTML = data.results
+      .map(
+        (item) => `
+      <a class="news-card" href="${item.link}" target="_blank">
+        <div class="news-thumb">
+          <img src="${item.image_url || ""}" alt="">
+        </div>
+        <div class="news-body">
+          <h3>${item.title}</h3>
+          <div class="meta">${item.source_id || ""} • ${item.pubDate || ""}</div>
+        </div>
+      </a>`
+      )
+      .join("");
+  } catch (e) {
+    feed.innerHTML = "<p>Arama sırasında hata oluştu.</p>";
+  }
+});
 
-    const cat = tab.dataset.cat; // data-cat="gundem" gibi
-    loadCategory(cat);
+// 🧭 Sekme tıklama olayları
+tabs.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    tabs.forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    loadCategory(btn.dataset.cat);
   });
 });
 
-// sayfa açılınca ilk kategoriyi yükle
-loadCategory("gundem");
+// Sayfa açılınca “Gündem” yüklensin
+loadCategory("top");
