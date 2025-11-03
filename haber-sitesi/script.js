@@ -1,106 +1,92 @@
 // Sekmeler
 const tabs = document.querySelectorAll(".tab");
 const feedTitle = document.getElementById("feedTitle");
-const feed = document.getElementById("feed");
-const errorBox = document.getElementById("error");
-const rssList = document.getElementById("rss-haberler");
+const feedContainer = document.getElementById("feed");
+const errorBox = document.getElementById("errorBox");
 
-// Burada senin Newsdata.io'dan çektiğin kategori haberlerini yükleyen fonksiyon vardı
-// ismi farklıysa aşağıyı kendi ismine göre düzeltirsin
-async function yukKategorisi(kategori) {
-  try {
-    // BURAYI sen daha önce nasıl yaptınsa öyle bırakabilirsin.
-    // Şimdilik boş bırakalım ki hata vermesin.
-    console.log("API'den kategori yüklenecek:", kategori);
-  } catch (e) {
-    console.error(e);
-    if (errorBox) {
-      errorBox.textContent = "Arama yapılamadı.";
-      errorBox.hidden = false;
-    }
-  }
-}
-
-// 1) KATEGORİ → RSS ADRESİ TABLOSU
-const RSS_KAYNAKLARI = {
-  gundem: "https://www.trthaber.com/rss/gundem.rss",
-  spor: "https://www.trthaber.com/rss/spor.rss",
-  teknoloji: "https://www.trthaber.com/rss/bilim-teknoloji.rss",
-  magazin: "https://www.trthaber.com/rss/kultur-sanat.rss",
-  saglik: "https://www.trthaber.com/rss/saglik.rss",
-  bilim: "https://www.trthaber.com/rss/bilim-teknoloji.rss",
+// KATEGORİ → NEWSDATA.IO QUERY
+const CATEGORY_QUERY = {
+  gundem: "gündem",
+  spor: "spor",
+  teknoloji: "teknoloji",
+  magazin: "magazin",
+  sağlık: "sağlık",
+  bilim: "bilim"
 };
 
-// 2) RSS GETİREN FONKSİYON
-async function getRssNews(kategori = "gundem") {
-  // Hangi RSS?
-  const rssUrl = RSS_KAYNAKLARI[kategori] || RSS_KAYNAKLARI["gundem"];
+// 🔑 Senin API Anahtarın
+const API_KEY = "pub_041412110a0644cfb63307b53c733b41";
 
-  // rss2json servisiyle RSS → JSON
-  const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(
-    rssUrl
+// Haberleri yükleyen fonksiyon
+async function loadNews(category = "gundem") {
+  feedContainer.innerHTML = "Yükleniyor...";
+  if (errorBox) {
+    errorBox.textContent = "";
+    errorBox.style.display = "none";
+  }
+
+  const query = CATEGORY_QUERY[category] || "gündem";
+  const url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&language=tr&q=${encodeURIComponent(
+    query
   )}`;
 
-  if (!rssList) return;
-
-  // önce temizle
-  rssList.innerHTML = "<p style='color:#fff'>RSS yükleniyor...</p>";
-
   try {
-    const res = await fetch(apiUrl);
+    const res = await fetch(url);
     const data = await res.json();
 
-    if (data.status !== "ok") {
-      rssList.innerHTML =
-        "<p style='color:#ff6'>RSS yüklenemedi (servis hatası)</p>";
-      return;
+    if (!data || data.status !== "success" || !data.results) {
+      throw new Error("API döndü ama sonuç yok");
     }
 
-    // başlık
-    rssList.innerHTML = "<h2>📰 RSS Haberleri</h2>";
+    if (feedTitle) {
+      feedTitle.textContent =
+        category === "gundem" ? "Gündem" : category.toUpperCase();
+    }
 
-    // ilk 6 haberi göster
-    data.items.slice(0, 6).forEach((item) => {
-      const div = document.createElement("div");
-      div.style.borderBottom = "1px solid #444";
-      div.style.padding = "10px 0";
+    feedContainer.innerHTML = data.results
+      .slice(0, 8)
+      .map(item => {
+        const title = item.title || "Başlık yok";
+        const link = item.link || "#";
+        const source = item.source_id ? ` (${item.source_id})` : "";
+        const date = item.pubDate
+          ? new Date(item.pubDate).toLocaleString("tr-TR")
+          : "";
+        return `
+          <div style="border-bottom:1px solid #444; padding:10px 0;">
+            <h3 style="margin:0 0 4px 0;">
+              <a href="${link}" target="_blank" style="color:#fff; text-decoration:none;">${title}</a>
+            </h3>
+            <small style="color:#aaa;">${date}${source}</small>
+          </div>
+        `;
+      })
+      .join("");
 
-      div.innerHTML = `
-        <h3 style="margin:0 0 4px 0">
-          <a href="${item.link}" target="_blank" style="color:#fff;text-decoration:none">
-            ${item.title}
-          </a>
-        </h3>
-        <small style="color:#aaa">${new Date(
-          item.pubDate
-        ).toLocaleString("tr-TR")}</small>
-      `;
-      rssList.appendChild(div);
-    });
+    if (feedContainer.innerHTML.trim() === "") {
+      feedContainer.innerHTML = "Bu kategoride haber bulunamadı.";
+    }
   } catch (err) {
-    console.error("RSS yüklenemedi:", err);
-    rssList.innerHTML =
-      "<p style='color:#ff6'>RSS yüklenemedi (internet ya da kaynak hatası)</p>";
+    console.error("Newsdata hatası:", err);
+    feedContainer.innerHTML = "";
+    if (errorBox) {
+      errorBox.textContent = "Haberler yüklenemedi (servis hatası)";
+      errorBox.style.display = "block";
+    } else {
+      feedContainer.innerHTML = "Haberler yüklenemedi.";
+    }
   }
 }
 
-// 3) SEKME TIKLAMA – hem kendi API’ni çağır, hem RSS’i
-tabs.forEach((tab) => {
+// Sekme tıklama
+tabs.forEach(tab => {
   tab.addEventListener("click", () => {
-    // aktif sekme değiştir
-    tabs.forEach((t) => t.classList.remove("active"));
+    tabs.forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
-
-    const kategori = tab.dataset.cat; // data-cat="gundem" gibi
-
-    // senin haber API’in
-    yukKategorisi(kategori);
-
-    // RSS kısmı
-    getRssNews(kategori);
+    const cat = tab.getAttribute("data-cat");
+    loadNews(cat);
   });
 });
 
-// 4) SAYFA AÇILIR AÇILMAZ İLK YÜKLEME
-yukKategorisi("gundem");
-getRssNews("gundem");
+// İlk açılışta gündem haberlerini yükle
+loadNews("gundem");
