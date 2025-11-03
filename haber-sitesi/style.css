@@ -1,0 +1,94 @@
+:root{
+  --bg:#0b1220;
+  --card:#111a2c;
+  --muted:#90a4b8;
+  --text:#e7eef7;
+  --brand:#e11b22;
+  --brand-dark:#b11318;
+  --line:#1f2a44;
+  --ok:#16a34a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+.container{max-width:1200px;margin:0 auto;padding:0 16px}
+.between{display:flex;align-items:center;justify-content:space-between}
+
+/* Topbar */
+.topbar{background:#0f172a;border-bottom:1px solid var(--line);font-size:14px}
+.topbar .container{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:8px 16px}
+.badge{background:var(--brand);padding:2px 8px;border-radius:6px;margin-right:8px}
+.topbar .link{opacity:.9;margin-left:12px}
+
+/* Header */
+.header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,#121a2e 0,#0f172a 100%);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px;padding:14px 0}
+.logo{width:44px;height:44px;border-radius:12px;background:var(--brand);display:grid;place-items:center;font-weight:800}
+.logo span{color:#fff}
+.brand-text h1{margin:0;font-size:22px}
+.brand-text small{color:var(--muted)}
+
+.search{display:flex;gap:8px}
+.search input{width:260px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#0b1220;color:var(--text)}
+.search button{padding:10px 14px;border-radius:10px;border:0;background:var(--brand);color:#fff;cursor:pointer}
+.search button:hover{background:var(--brand-dark)}
+
+.nav{border-top:1px solid var(--line)}
+.nav .container{display:flex;align-items:center;gap:8px;padding:8px 0}
+.tab{padding:8px 12px;border:1px solid var(--line);background:#0c1425;color:#cbd5e1;border-radius:999px;cursor:pointer}
+.tab.active{background:var(--brand);color:#fff;border-color:transparent}
+.views{margin-left:auto;display:flex;gap:8px}
+.views button{padding:8px 12px;border:1px solid var(--line);background:#0c1425;border-radius:10px;color:#cbd5e1;cursor:pointer}
+.views button.active{background:#1e293b}
+
+/* Hero */
+.hero{border-bottom:1px solid var(--line);background:#0c1425}
+.hero-wrap{display:grid;grid-template-columns:2fr 1fr;gap:16px;padding:16px 0}
+.hero .card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.hero .big .title{font-size:22px}
+.hero .small{display:grid;gap:12px}
+
+/* Feed */
+h2{margin:24px 0 12px}
+.error{background:#2b1620;color:#ffb4c0;border:1px solid #4b1d28;border-radius:10px;padding:12px 14px}
+.feed{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.feed.list{grid-template-columns:1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.thumb{width:100%;aspect-ratio:16/9;object-fit:cover}
+.card-body{padding:12px}
+.title{margin:0 0 6px;font-size:18px;line-height:1.35}
+.meta{display:flex;gap:10px;color:var(--muted);font-size:13px}
+.actions{display:flex;gap:8px;margin-top:12px}
+.link,.like{padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:#0c1425;cursor:pointer}
+.link:hover{background:#1e293b}
+.like.active{background:var(--ok);border-color:transparent;color:#fff}
+
+/* Skeleton */
+.skel{background:linear-gradient(90deg,#0e1628 0,#15213a 50%,#0e1628 100%);background-size:200% 100%;animation:sh 1.1s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+
+/* Ad */
+.ad{margin:28px 0}
+.ad-placeholder{height:120px;border:1px dashed var(--line);border-radius:16px;display:grid;place-items:center;color:#94a3b8}
+
+/* Subscribe */
+.subscribe{padding:18px;border:1px solid var(--line);border-radius:16px;background:#0c1425}
+.sub-form{display:flex;gap:8px;margin:10px 0}
+.sub-form input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#0b1220;color:var(--text)}
+.sub-form button{padding:10px 14px;border-radius:10px;border:0;background:var(--brand);color:#fff;cursor:pointer}
+.sub-form button:hover{background:var(--brand-dark)}
+
+/* Footer */
+.footer{margin-top:28px;border-top:1px solid var(--line);padding:18px 0;color:#a8b3c7}
+.footer .links a{margin-left:12px;color:#a8b3c7}
+
+/* Responsive */
+@media (max-width:992px){
+  .feed{grid-template-columns:repeat(2,1fr)}
+  .hero-wrap{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .search input{width:170px}
+  .feed{grid-template-columns:1fr}
+}

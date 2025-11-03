@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Haberlerim - Güncel Gündem</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- ✅ Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5803994489635087"
+     crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <header>
+    <h1>📰 Haberlerim</h1>
+    <nav>
+      <button class="tab active" data-cat="top">Gündem</button>
+      <button class="tab" data-cat="sports">Spor</button>
+      <button class="tab" data-cat="technology">Teknoloji</button>
+      <button class="tab" data-cat="entertainment">Magazin</button>
+      <button class="tab" data-cat="health">Sağlık</button>
+      <button class="tab" data-cat="science">Bilim</button>
+    </nav>
+    <div class="search-bar">
+      <input type="text" id="q" placeholder="Haber ara..." />
+      <button id="searchBtn">Ara</button>
+    </div>
+  </header>
+
+  <!-- ✅ Reklam Alanı -->
+  <div class="ads">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-5803994489635087"
+         data-ad-slot="1234567890"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+  </div>
+
+  <main>
+    <h2 id="feedTitle">Gündem</h2>
+    <div id="err" hidden></div>
+    <div id="feed"></div>
+  </main>
+
+  <footer>
+    <p>© <span id="y"></span> Haberlerim - Tüm hakları saklıdır.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
