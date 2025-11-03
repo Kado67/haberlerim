@@ -1,9 +1,4 @@
-
-/* ===========================
-   HABERLERİM - FULL CSS
-   =========================== */
-
-/* GENEL AYARLAR */
+/* GENEL */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -15,42 +10,38 @@ body {
   color: #222;
 }
 
-/* HEADER */
+/* ÜST BAR */
 header {
-  background: #ffffff;
+  background: #fff;
   border-bottom: 2px solid #c90000;
-  padding: 12px;
-  text-align: left;
+  padding: 12px 10px;
 }
 header h1 {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
-  color: #000;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 header h1::before {
   content: "🗞️";
-  font-size: 26px;
 }
 
-/* MENÜ (KATEGORİLER) */
+/* MENÜ */
 nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
   margin-top: 10px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 nav .tab {
   background: #c90000;
   color: #fff;
   border: none;
+  padding: 6px 14px;
   border-radius: 4px;
-  padding: 6px 16px;
   font-size: 14px;
   cursor: pointer;
-  transition: 0.2s;
 }
 nav .tab.active {
   background: #fff;
@@ -58,13 +49,10 @@ nav .tab.active {
   border: 1px solid #c90000;
   font-weight: 600;
 }
-nav .tab:hover {
-  opacity: 0.85;
-}
 
-/* ARAMA ALANI */
+/* ARAMA */
 .search-bar {
-  margin-top: 12px;
+  margin-top: 10px;
   display: flex;
   gap: 8px;
 }
@@ -73,40 +61,110 @@ nav .tab:hover {
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 7px 10px;
-  font-size: 14px;
 }
 .search-bar button {
   background: #007bff;
-  border: none;
   color: #fff;
-  padding: 7px 16px;
+  border: none;
   border-radius: 4px;
+  padding: 7px 15px;
   cursor: pointer;
-  font-weight: 500;
-  font-size: 14px;
-}
-.search-bar button:hover {
-  background: #005ec2;
 }
 
-/* ANA İÇERİK */
+/* ANA KUTU */
 main {
   max-width: 1100px;
   margin: 20px auto;
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 6px;
-  padding: 18px;
+  padding: 15px;
 }
 
-/* KATEGORİ BAŞLIĞI */
-#feedTitle {
+/* BAŞLIK (Gündem vs) */
+#feedTitle,
+h2 {
   font-size: 22px;
   font-weight: 700;
   border-bottom: 2px solid #c90000;
-  padding-bottom: 6px;
-  margin-bottom: 16px;
-  color: #222;
+  padding-bottom: 5px;
+  margin-bottom: 15px;
+}
+
+/* HABER LİSTESİ KAPSAYICI
+   (senin JS büyük ihtimalle #feed üretiyor) */
+#feed {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* HABER KARTI – senin şu an çıkan tek tek haberlerin */
+.news-item,
+.article,
+#feed > div {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  gap: 14px;
+  padding: 12px;
+}
+
+/* RESİM */
+.news-item img,
+.article img,
+#feed > div img {
+  width: 240px;
+  min-width: 240px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+/* METİN KISMI */
+.news-content,
+.article-body,
+#feed > div div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.news-title,
+.article-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #000;
+}
+
+.news-meta,
+.article-meta {
+  font-size: 11px;
+  color: #777;
+}
+
+.news-desc,
+.article-desc {
+  font-size: 13px;
+  color: #333;
+  line-height: 1.4;
+}
+
+.news-link,
+.article a {
+  font-size: 13px;
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: auto;
+}
+.news-link:hover,
+.article a:hover {
+  text-decoration: underline;
 }
 
 /* HATA MESAJI */
@@ -119,67 +177,7 @@ main {
   margin-bottom: 10px;
 }
 
-/* HABERLERİN GRID YAPISI */
-#feed {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 18px;
-}
-
-/* HABER KARTLARI */
-.article {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: all 0.25s ease;
-}
-.article:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-}
-.article-img {
-  width: 100%;
-  height: 180px;
-  background-size: cover;
-  background-position: center;
-}
-.article-body {
-  padding: 12px 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-}
-.article-title {
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.3;
-  color: #000;
-}
-.article-meta {
-  font-size: 11px;
-  color: #777;
-}
-.article-desc {
-  font-size: 13px;
-  color: #333;
-  line-height: 1.4;
-}
-.article a {
-  font-size: 13px;
-  color: #007bff;
-  text-decoration: none;
-  font-weight: 600;
-  margin-top: auto;
-}
-.article a:hover {
-  text-decoration: underline;
-}
-
-/* ALT BÖLÜM */
+/* ALT */
 footer {
   text-align: center;
   font-size: 12px;
@@ -187,17 +185,28 @@ footer {
   margin: 25px 0;
 }
 
-/* MOBİL DÜZEN */
+/* MOBİL */
 @media (max-width: 768px) {
   main {
     padding: 10px;
     border-radius: 0;
   }
-  .article-img {
-    height: 140px;
+
+  .news-item,
+  .article,
+  #feed > div {
+    flex-direction: column;
   }
+
+  .news-item img,
+  .article img,
+  #feed > div img {
+    width: 100%;
+    min-width: 100%;
+    height: 180px;
+  }
+
   nav {
-    justify-content: flex-start;
     overflow-x: auto;
   }
 }
