@@ -1,92 +1,105 @@
 // Sekmeler
 const tabs = document.querySelectorAll(".tab");
 const feedTitle = document.getElementById("feedTitle");
-const feedContainer = document.getElementById("feed");
+const feed = document.getElementById("feed");
 const errorBox = document.getElementById("errorBox");
 
-// KATEGORİ → NEWSDATA.IO QUERY
-const CATEGORY_QUERY = {
-  gundem: "gündem",
-  spor: "spor",
-  teknoloji: "teknoloji",
-  magazin: "magazin",
-  sağlık: "sağlık",
-  bilim: "bilim"
-};
-
-// 🔑 Senin API Anahtarın
+// BURAYA SENİN NEWSDATA.IO API ANAHTARIN
 const API_KEY = "pub_041412110a0644cfb63307b53c733b41";
 
-// Haberleri yükleyen fonksiyon
-async function loadNews(category = "gundem") {
-  feedContainer.innerHTML = "Yükleniyor...";
-  if (errorBox) {
-    errorBox.textContent = "";
-    errorBox.style.display = "none";
+// Newsdata kategorilerini bizim sekmelere bağla
+// (senin sekmelerin: gundem, spor, teknoloji, magazin, sağlik, bilim)
+const CATEGORY_MAP = {
+  gundem: "top",
+  spor: "sports",
+  teknoloji: "technology",
+  magazin: "entertainment",
+  sağlik: "health",
+  bilim: "science"
+};
+
+// haberleri ekrana basan fonksiyon
+function renderNews(articles = []) {
+  // hiç haber yoksa
+  if (!articles.length) {
+    feed.innerHTML = "<p>Bu kategoride haber bulunamadı.</p>";
+    return;
   }
 
-  const query = CATEGORY_QUERY[category] || "gündem";
-  const url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&language=tr&q=${encodeURIComponent(
-    query
-  )}`;
+  feed.innerHTML = articles
+    .map((item) => {
+      const title = item.title || "Haber başlığı yok";
+      const link = item.link || item.url || "#";
+      const source = item.source_id || item.source || "";
+      const date = item.pubDate || item.pub_date || "";
+      const img = item.image_url || item.image || "";
+
+      return `
+        <a class="news-card" href="${link}" target="_blank" rel="noopener">
+          <div class="news-thumb">
+            ${
+              img
+                ? `<img src="${img}" alt="${title}" />`
+                : `<div class="no-img"></div>`
+            }
+          </div>
+          <div class="news-body">
+            <h3>${title}</h3>
+            <p class="meta">
+              ${source ? source : ""} ${date ? " • " + date : ""}
+            </p>
+          </div>
+        </a>
+      `;
+    })
+    .join("");
+}
+
+// api'den haber çeken fonksiyon
+async function loadCategory(cat = "gundem") {
+  // kullanacağımız newsdata kategorisi
+  const ndCat = CATEGORY_MAP[cat] || "top";
+  const url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&language=tr&country=tr&category=${ndCat}`;
+
+  // başlığı değiştir
+  if (feedTitle) {
+    feedTitle.textContent =
+      cat.charAt(0).toUpperCase() + cat.slice(1) + "";
+  }
+
+  // hata kutusunu sakla
+  if (errorBox) errorBox.style.display = "none";
 
   try {
     const res = await fetch(url);
     const data = await res.json();
 
-    if (!data || data.status !== "success" || !data.results) {
-      throw new Error("API döndü ama sonuç yok");
+    if (data.status !== "success") {
+      throw new Error("API hata döndürdü");
     }
 
-    if (feedTitle) {
-      feedTitle.textContent =
-        category === "gundem" ? "Gündem" : category.toUpperCase();
-    }
-
-    feedContainer.innerHTML = data.results
-      .slice(0, 8)
-      .map(item => {
-        const title = item.title || "Başlık yok";
-        const link = item.link || "#";
-        const source = item.source_id ? ` (${item.source_id})` : "";
-        const date = item.pubDate
-          ? new Date(item.pubDate).toLocaleString("tr-TR")
-          : "";
-        return `
-          <div style="border-bottom:1px solid #444; padding:10px 0;">
-            <h3 style="margin:0 0 4px 0;">
-              <a href="${link}" target="_blank" style="color:#fff; text-decoration:none;">${title}</a>
-            </h3>
-            <small style="color:#aaa;">${date}${source}</small>
-          </div>
-        `;
-      })
-      .join("");
-
-    if (feedContainer.innerHTML.trim() === "") {
-      feedContainer.innerHTML = "Bu kategoride haber bulunamadı.";
-    }
+    const results = data.results || data.articles || [];
+    renderNews(results);
   } catch (err) {
-    console.error("Newsdata hatası:", err);
-    feedContainer.innerHTML = "";
+    console.error(err);
     if (errorBox) {
-      errorBox.textContent = "Haberler yüklenemedi (servis hatası)";
+      errorBox.textContent = "Haberler yüklenemedi (API / servis hatası)";
       errorBox.style.display = "block";
-    } else {
-      feedContainer.innerHTML = "Haberler yüklenemedi.";
     }
+    feed.innerHTML = "";
   }
 }
 
-// Sekme tıklama
-tabs.forEach(tab => {
+// sekme tıklamaları
+tabs.forEach((tab) => {
   tab.addEventListener("click", () => {
-    tabs.forEach(t => t.classList.remove("active"));
+    tabs.forEach((t) => t.classList.remove("active"));
     tab.classList.add("active");
-    const cat = tab.getAttribute("data-cat");
-    loadNews(cat);
+
+    const cat = tab.dataset.cat; // data-cat="gundem" gibi
+    loadCategory(cat);
   });
 });
 
-// İlk açılışta gündem haberlerini yükle
-loadNews("gundem");
+// sayfa açılınca ilk kategoriyi yükle
+loadCategory("gundem");
