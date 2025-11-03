@@ -1,4 +1,4 @@
-// 🔑 API anahtarını buraya koy
+// 🔑 KENDİ API KEY'İNİ BURAYA YAZ
 const NEWS_API_KEY = "pub_ee04dcfcf6b54339b4bc667b529dea62";
 
 // DOM elemanları
@@ -8,144 +8,68 @@ const feed = document.getElementById("feed");
 const searchInput = document.getElementById("q");
 const searchBtn = document.getElementById("searchBtn");
 
-// Newsdata kategorilerini bizim butonlarla eşleştir
+// buton isimlerini Newsdata kategorisine çeviriyoruz
 const API_CATEGORIES = {
-  gundem: "top",        // genel
+  gundem: "top",
   spor: "sports",
   teknoloji: "technology",
   magazin: "entertainment",
   saglik: "health",
-  bilim: "science"
+  bilim: "science",
 };
 
-// Aynı kategoriler için kullanacağımız RSS listesi
-const RSS_SOURCES = {
-  gundem: "https://www.trthaber.com/rss/gundem.rss",
-  spor: "https://www.trthaber.com/rss/spor.rss",
-  teknoloji: "https://www.trthaber.com/rss/bilim-teknoloji.rss",
-  magazin: "https://www.trthaber.com/rss/kultur-sanat.rss",
-  saglik: "https://www.trthaber.com/rss/yasam.rss",
-  bilim: "https://www.trthaber.com/rss/bilim-teknoloji.rss"
-};
-
-// ekranda tutacağımız veri (arama için)
+// ekranda tutacağımız liste (arama için)
 let currentItems = [];
-
-// 1 saat = 3600000 ms
-const ONE_HOUR = 60 * 60 * 1000;
 
 // kategori yükle
 async function loadCategory(category = "gundem") {
-  // başlığı ayarla
-  feedTitle.textContent =
-    category.charAt(0).toUpperCase() + category.slice(1);
+  // başlık
+  feedTitle.textContent = category.charAt(0).toUpperCase() + category.slice(1);
 
   // aktif sekme
   tabs.forEach((t) => t.classList.remove("active"));
-  const activeTab = Array.from(tabs).find(
-    (t) => t.dataset.cat === category
-  );
+  const activeTab = Array.from(tabs).find((t) => t.dataset.cat === category);
   if (activeTab) activeTab.classList.add("active");
 
+  // yükleniyor
   feed.innerHTML = '<p style="padding:1rem;color:#fff;">Yükleniyor...</p>';
 
-  // en son bu kategoride API ne zaman çağrılmış?
-  const lsKey = "last_api_call_" + category;
-  const lastCall = localStorage.getItem(lsKey);
-  const now = Date.now();
-
-  const canUseApi = !lastCall || now - Number(lastCall) > ONE_HOUR;
-
-  if (canUseApi) {
-    const ok = await loadFromAPI(category);
-    if (ok) {
-      // başarılıysa zamanı kaydet
-      localStorage.setItem(lsKey, String(now));
-      return;
-    }
-    // API başarısızsa RSS'e düş
-  }
-
-  // RSS'ten getir
-  await loadFromRSS(category);
-}
-
-// API'den çek
-async function loadFromAPI(category) {
-  const apiCat = API_CATEGORIES[category];
-  if (!apiCat) return false;
-
+  const apiCat = API_CATEGORIES[category] || "top";
   const url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}&category=${apiCat}&country=tr&language=tr`;
 
   try {
     const res = await fetch(url);
-    if (!res.ok) throw new Error("API yanıtı hata");
+    if (!res.ok) throw new Error("API yanıt vermedi");
     const data = await res.json();
 
     if (!data.results || data.results.length === 0) {
-      return false;
+      feed.innerHTML =
+        '<p style="padding:1rem;color:#fff;">Bu kategori için haber bulunamadı.</p>';
+      currentItems = [];
+      return;
     }
 
+    // sonuçları basit objeye çevir
     const items = data.results.map((item) => ({
       title: item.title || "Başlık yok",
       link: item.link || "#",
       desc: item.description || "",
       date: item.pubDate || "",
-      source: item.source_id || ""
+      source: item.source_id || "",
+      image: item.image_url || "",
     }));
 
     currentItems = items;
     renderList(items);
-    return true;
-  } catch (err) {
-    console.error("API hata:", err);
-    return false;
-  }
-}
-
-// RSS'ten çek
-async function loadFromRSS(category) {
-  const rssUrl = RSS_SOURCES[category];
-  if (!rssUrl) {
-    feed.innerHTML =
-      '<p style="padding:1rem;color:#fff;">Bu kategori için RSS tanımlı değil.</p>';
-    currentItems = [];
-    return;
-  }
-
-  try {
-    const resp = await fetch(
-      "https://api.allorigins.win/get?url=" + encodeURIComponent(rssUrl)
-    );
-    const data = await resp.json();
-
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(data.contents, "text/xml");
-    const items = xml.querySelectorAll("item");
-
-    const parsed = [];
-    items.forEach((item) => {
-      parsed.push({
-        title: item.querySelector("title")?.textContent || "Başlık yok",
-        link: item.querySelector("link")?.textContent || "#",
-        desc: item.querySelector("description")?.textContent || "",
-        date: item.querySelector("pubDate")?.textContent || "",
-        source:
-          xml.querySelector("channel > title")?.textContent || "kaynak"
-      });
-    });
-
-    currentItems = parsed;
-    renderList(parsed);
   } catch (err) {
     console.error(err);
     feed.innerHTML =
-      '<p style="padding:1rem;color:#fff;">RSS yüklenemedi (servis hatası)</p>';
+      '<p style="padding:1rem;color:#fff;">Haberler alınamadı (API hatası)</p>';
     currentItems = [];
   }
 }
 
-// ekrana yaz
+// listeyi ekrana yaz
 function renderList(list) {
   if (!list || list.length === 0) {
     feed.innerHTML =
@@ -158,10 +82,17 @@ function renderList(list) {
     .map((item) => {
       return `
       <article class="news-card">
-        <h3>${item.title}</h3>
-        <p class="meta">${item.source || ""} • ${item.date || ""}</p>
-        <p class="desc">${(item.desc || "").slice(0, 160)}...</p>
-        <a href="${item.link}" target="_blank" rel="noopener">Habere git</a>
+        ${
+          item.image
+            ? `<img src="${item.image}" alt="" class="thumb" />`
+            : ""
+        }
+        <div class="news-body">
+          <h3>${item.title}</h3>
+          <p class="meta">${item.source || ""} • ${item.date || ""}</p>
+          <p class="desc">${(item.desc || "").slice(0, 140)}...</p>
+          <a href="${item.link}" target="_blank" rel="noopener">Habere git</a>
+        </div>
       </article>
     `;
     })
@@ -185,7 +116,7 @@ function doSearch() {
   renderList(filtered);
 }
 
-// eventler
+// sekme tıklama
 tabs.forEach((tab) => {
   tab.addEventListener("click", () => {
     const cat = tab.dataset.cat;
@@ -193,6 +124,7 @@ tabs.forEach((tab) => {
   });
 });
 
+// arama tıklama
 if (searchBtn) {
   searchBtn.addEventListener("click", doSearch);
 }
@@ -202,5 +134,6 @@ if (searchInput) {
   });
 }
 
-// ilk açılış
+// sayfa açılınca gündem
 loadCategory("gundem");
+
