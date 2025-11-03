@@ -1,62 +1,33 @@
-// butonlar
+// Elemanlar
 const tabs = document.querySelectorAll(".tab");
 const feedTitle = document.getElementById("feedTitle");
 const feed = document.getElementById("feed");
 const searchInput = document.getElementById("q");
 const searchBtn = document.getElementById("searchBtn");
 
-// senin key
+// Senin API key
 const API_KEY = "pub_041412110a0644cfb63307b53c733b41";
 
-/*
-  Her sekmenin 2 adresi var:
-  1) primary: Türkçe dene
-  2) fallback: aynı kategori ama dili serbest bırak
-*/
-const CATEGORY_MAP = {
-  gundem: {
-    title: "Gündem",
-    primary: `https://newsdata.io/api/1/news?apikey=${API_KEY}&country=tr&language=tr`,
-    fallback: null
-  },
-  spor: {
-    title: "Spor",
-    primary: `https://newsdata.io/api/1/news?apikey=${API_KEY}&category=sports&language=tr`,
-    fallback: `https://newsdata.io/api/1/news?apikey=${API_KEY}&category=sports`
-  },
-  teknoloji: {
-    title: "Teknoloji",
-    primary: `https://newsdata.io/api/1/news?apikey=${API_KEY}&category=technology&language=tr`,
-    fallback: `https://newsdata.io/api/1/news?apikey=${API_KEY}&category=technology`
-  },
-  magazin: {
-    title: "Magazin",
-    // entertainment çoğu zaman magazin gibi
-    primary: `https://newsdata.io/api/1/news?apikey=${API_KEY}&category=entertainment&language=tr`,
-    fallback: `https://newsdata.io/api/1/news?apikey=${API_KEY}&category=entertainment`
-  },
-  sağlık: {
-    title: "Sağlık",
-    primary: `https://newsdata.io/api/1/news?apikey=${API_KEY}&category=health&language=tr`,
-    fallback: `https://newsdata.io/api/1/news?apikey=${API_KEY}&category=health`
-  },
-  bilim: {
-    title: "Bilim",
-    primary: `https://newsdata.io/api/1/news?apikey=${API_KEY}&category=science&language=tr`,
-    fallback: `https://newsdata.io/api/1/news?apikey=${API_KEY}&category=science`
-  }
+// Her sekmenin arama kelimesi
+const CATEGORY_QUERY = {
+  gundem: { title: "Gündem", q: null },           // sadece TR genel
+  spor: { title: "Spor", q: "spor" },
+  teknoloji: { title: "Teknoloji", q: "teknoloji" },
+  magazin: { title: "Magazin", q: "magazin" },
+  sağlık: { title: "Sağlık", q: "sağlık" },
+  saglik: { title: "Sağlık", q: "sağlık" },        // ihtiyaten
+  bilim: { title: "Bilim", q: "bilim" },
 };
 
-// Haber basan fonksiyon
+// Haberleri ekrana bas
 function renderNews(list, titleText) {
   feedTitle.textContent = titleText;
   feed.innerHTML = list
-    .slice(0, 10)
+    .slice(0, 12)
     .map((item) => {
       const img = item.image_url
         ? `<div class="news-img"><img src="${item.image_url}" alt=""></div>`
         : `<div class="news-img"></div>`;
-
       return `
         <a href="${item.link}" target="_blank" rel="noopener" class="news-card">
           ${img}
@@ -72,7 +43,7 @@ function renderNews(list, titleText) {
     .join("");
 }
 
-// Bir URL’den güvenli haber çek
+// Güvenli fetch
 async function fetchSafe(url) {
   const res = await fetch(url);
   const data = await res.json();
@@ -81,22 +52,34 @@ async function fetchSafe(url) {
 
 // Sekme yükleyici
 async function loadCategory(key = "gundem") {
-  // türkçe İ / ı saçmalığını düzelt
-  key = key.toLowerCase().replace("ı", "i");
-
-  const cfg = CATEGORY_MAP[key];
+  key = key.toLowerCase().replace("ı", "i"); // teknoloji / saglik için
+  const cfg = CATEGORY_QUERY[key];
   if (!cfg) return;
 
   feedTitle.textContent = cfg.title;
   feed.innerHTML = "<p style='margin:10px 14px'>Yükleniyor...</p>";
 
   try {
-    // önce türkçe olanı dene
-    let results = await fetchSafe(cfg.primary);
+    let results;
 
-    // boşsa fallback’e geç
-    if ((!results || results.length === 0) && cfg.fallback) {
-      results = await fetchSafe(cfg.fallback);
+    if (cfg.q) {
+      // önce TR + kelime
+      const urlTr = `https://newsdata.io/api/1/news?apikey=${API_KEY}&language=tr&q=${encodeURIComponent(
+        cfg.q
+      )}`;
+      results = await fetchSafe(urlTr);
+
+      // TR boşsa dilsiz aynı kelime
+      if (!results || results.length === 0) {
+        const urlAny = `https://newsdata.io/api/1/news?apikey=${API_KEY}&q=${encodeURIComponent(
+          cfg.q
+        )}`;
+        results = await fetchSafe(urlAny);
+      }
+    } else {
+      // gündem
+      const urlTr = `https://newsdata.io/api/1/news?apikey=${API_KEY}&country=tr&language=tr`;
+      results = await fetchSafe(urlTr);
     }
 
     if (!results || results.length === 0) {
@@ -111,10 +94,11 @@ async function loadCategory(key = "gundem") {
   }
 }
 
-// Sekmelere tıklama
+// Sekme tıklama
 tabs.forEach((btn) => {
   btn.addEventListener("click", () => {
-    const key = (btn.dataset.cat || btn.textContent.trim().toLowerCase()).replace("ı", "i");
+    const key =
+      (btn.dataset.cat || btn.textContent.trim().toLowerCase()).replace("ı", "i");
     tabs.forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
     loadCategory(key);
@@ -126,22 +110,20 @@ searchBtn.addEventListener("click", async () => {
   const q = searchInput.value.trim();
   if (!q) return;
 
-  const url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&q=${encodeURIComponent(
-    q
-  )}&language=tr`;
-
   feedTitle.textContent = `"${q}" araması`;
   feed.innerHTML = "<p style='margin:10px 14px'>Yükleniyor...</p>";
 
   try {
-    let results = await fetchSafe(url);
-
-    // türkçe yoksa dilsiz dene
-    if (!results || results.length === 0) {
-      const url2 = `https://newsdata.io/api/1/news?apikey=${API_KEY}&q=${encodeURIComponent(
+    let results = await fetchSafe(
+      `https://newsdata.io/api/1/news?apikey=${API_KEY}&language=tr&q=${encodeURIComponent(
         q
-      )}`;
-      results = await fetchSafe(url2);
+      )}`
+    );
+
+    if (!results || results.length === 0) {
+      results = await fetchSafe(
+        `https://newsdata.io/api/1/news?apikey=${API_KEY}&q=${encodeURIComponent(q)}`
+      );
     }
 
     if (!results || results.length === 0) {
@@ -155,5 +137,5 @@ searchBtn.addEventListener("click", async () => {
   }
 });
 
-// açılışta gündem
+// açılış
 loadCategory("gundem");
