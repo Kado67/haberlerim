@@ -3,28 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- ✅ Google Search Console Doğrulama -->
-  <meta name="google-site-verification" content="YRabUztMdRkPNSPEiy2U9hwOxZw0MweT1b4zQAMle3k" />
-
   <title>Haberlerim - Güncel Gündem</title>
-  <link rel="stylesheet" href="style.css" />
+
+  <!-- ✅ Google Search Console doğrulaması -->
+  <meta name="google-site-verification" content="YRabUztMdRkPNSPEiy2U9hwOxZw0MweT1b4zQAMle3k" />
 
   <!-- ✅ Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5803994489635087"
      crossorigin="anonymous"></script>
-</head>
-<body>
 
+  <!-- ✅ Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9ENMRZ96VD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-9ENMRZ96VD');
+  </script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
   <header>
     <h1>📰 Haberlerim</h1>
     <nav>
       <button class="tab active" data-cat="top">Gündem</button>
-      <button class="tab" data-cat="sports">Spor</button>
-      <button class="tab" data-cat="technology">Teknoloji</button>
-      <button class="tab" data-cat="entertainment">Magazin</button>
-      <button class="tab" data-cat="health">Sağlık</button>
-      <button class="tab" data-cat="science">Bilim</button>
     </nav>
     <div class="search-bar">
       <input type="text" id="q" placeholder="Haber ara..." />
@@ -32,6 +36,7 @@
     </div>
   </header>
 
+  <!-- ✅ Reklam Alanı -->
   <div class="ads">
     <ins class="adsbygoogle"
          style="display:block"
