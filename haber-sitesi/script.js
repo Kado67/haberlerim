@@ -1,10 +1,22 @@
-// ====== AYARLAR ======
-const API_KEY = "pub_ee04dcfcf6b54339b4bc667b529dea62"; // senin yeni anahtarın
-const BASE_URL = "https://gnews.io/api/v4";
+// =========================
+//  HABERLERİ ÇEKEN JS
+//  provider: newsdata.io
+//  api key: KENDİ VERDİĞİN
+// =========================
 
-// GNews topic isimlerine çeviri
-const TOPIC_MAP = {
-  gundem: "nation",       // Türkiye / ülke haberleri
+const API_KEY = "pub_ee04dcfcf6b54339b4bc667b529dea62";
+const BASE_URL = "https://newsdata.io/api/1/news";
+
+// HTML elemanları
+const tabs = document.querySelectorAll(".tab");
+const feed = document.getElementById("feed");
+const feedTitle = document.getElementById("feedTitle");
+const searchInput = document.getElementById("q");
+const searchBtn = document.getElementById("searchBtn");
+
+// senin buton isimlerini newsdata kategorilerine çeviriyoruz
+const CATEGORY_MAP = {
+  gundem: "top",          // genel / top
   spor: "sports",
   teknoloji: "technology",
   magazin: "entertainment",
@@ -12,74 +24,49 @@ const TOPIC_MAP = {
   bilim: "science"
 };
 
-// ====== DOM ELEMANLARI ======
-const tabs = document.querySelectorAll(".tab");
-const feed = document.getElementById("feed");
-const feedTitle = document.getElementById("feedTitle");
-const searchInput = document.getElementById("q");
-const searchBtn = document.getElementById("searchBtn");
-const errorBox = document.getElementById("error");
-
-// güvenlik: bu elemanlar yoksa sessizce çık
-if (!feed || !feedTitle) {
-  console.warn("Gerekli DOM elemanları bulunamadı.");
-}
-
 // küçük yardımcılar
-function formatDate(dateStr) {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  return d.toLocaleString("tr-TR");
+function setLoading() {
+  if (feed) feed.innerHTML = `<p style="padding:1rem;">Yükleniyor...</p>`;
 }
 
-function showError(msg) {
-  if (errorBox) {
-    errorBox.textContent = msg;
-    errorBox.style.display = "block";
-  } else {
-    console.error(msg);
-  }
+function setTitle(txt) {
+  if (feedTitle) feedTitle.textContent = txt;
 }
 
-function clearError() {
-  if (errorBox) {
-    errorBox.textContent = "";
-    errorBox.style.display = "none";
-  }
+function formatDate(d) {
+  if (!d) return "";
+  return new Date(d).toLocaleString("tr-TR");
 }
 
-// haberleri ekrana bas
-function renderArticles(articles) {
+function renderArticles(list) {
   if (!feed) return;
 
-  if (!articles || articles.length === 0) {
-    feed.innerHTML = `<p class="no-news">Bu kategori için haber bulunamadı.</p>`;
+  if (!list || !list.length) {
+    feed.innerHTML = `<p style="padding:1rem;">Haber bulunamadı.</p>`;
     return;
   }
 
-  const html = articles
-    .map((a) => {
-      const img = a.image
-        ? a.image
-        : "https://via.placeholder.com/400x220?text=Haber";
+  const html = list
+    .map((item) => {
+      const img =
+        item.image_url ||
+        "https://via.placeholder.com/360x200?text=Haber"; // resim yoksa
       return `
-      <article class="news-card">
-        <div class="news-thumb">
-          <img src="${img}" alt="${a.title || ""}">
-        </div>
-        <div class="news-content">
-          <h3>${a.title || "Başlık yok"}</h3>
-          <p class="meta">
-            ${a.source && a.source.name ? a.source.name : ""} • ${formatDate(
-        a.publishedAt
+        <article class="news-card">
+          <div class="news-thumb">
+            <img src="${img}" alt="${item.title || ""}">
+          </div>
+          <div class="news-body">
+            <h3>${item.title || "Başlık yok"}</h3>
+            <p class="meta">
+              ${(item.source_id || "").toUpperCase()} • ${formatDate(
+        item.pubDate
       )}
-          </p>
-          <p class="desc">${a.description || ""}</p>
-          <a class="read-more" href="${a.url}" target="_blank" rel="noopener">
-            Habere git
-          </a>
-        </div>
-      </article>
+            </p>
+            <p class="desc">${item.description || ""}</p>
+            <a class="read-more" href="${item.link}" target="_blank" rel="noopener">Habere git</a>
+          </div>
+        </article>
       `;
     })
     .join("");
@@ -87,94 +74,91 @@ function renderArticles(articles) {
   feed.innerHTML = html;
 }
 
-// kategoriye göre haber çek
-async function loadCategory(catKey = "gundem") {
-  clearError();
-  if (feed) feed.innerHTML = `<p class="loading">Yükleniyor...</p>`;
+// kategoriye göre çek
+async function loadCategory(cat = "gundem") {
+  setLoading();
+  setTitle(cat.charAt(0).toUpperCase() + cat.slice(1));
 
-  const topic = TOPIC_MAP[catKey] || "nation";
-  if (feedTitle) {
-    // ilk harf büyük
-    feedTitle.textContent =
-      catKey.charAt(0).toUpperCase() + catKey.slice(1).toLowerCase();
+  const newsCat = CATEGORY_MAP[cat] || "top";
+
+  // newsdata.io kuyruk
+  let url = `${BASE_URL}?apikey=${API_KEY}&country=tr&language=tr`;
+  if (newsCat) {
+    url += `&category=${newsCat}`;
   }
-
-  const url = `${BASE_URL}/top-headlines?token=${API_KEY}&topic=${topic}&lang=tr&max=20`;
 
   try {
     const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error("API hatası: " + res.status);
-    }
+    if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
-    renderArticles(data.articles);
+
+    if (data.status !== "success") {
+      throw new Error("API başarısız");
+    }
+
+    renderArticles(data.results);
   } catch (err) {
     console.error(err);
-    showError("Haberler alınamadı. Biraz sonra tekrar deneyin.");
-    if (feed) feed.innerHTML = "";
+    if (feed)
+      feed.innerHTML =
+        `<p style="padding:1rem;color:#d00;">Haberler alınamadı. Daha sonra tekrar deneyin.</p>`;
   }
 }
 
-// arama yap
+// arama
 async function doSearch(q) {
   q = q.trim();
   if (!q) {
-    // boşsa aktif kategoriyi tekrar yükle
+    // boşsa aktif sekmeyi tekrar yükle
     const active = document.querySelector(".tab.active");
-    const cat = active ? active.dataset.cat : "gundem";
-    loadCategory(cat);
+    const currentCat = active ? active.dataset.cat : "gundem";
+    loadCategory(currentCat);
     return;
   }
 
-  clearError();
-  if (feed) feed.innerHTML = `<p class="loading">Aranıyor...</p>`;
-  if (feedTitle) feedTitle.textContent = `"${q}" için sonuçlar`;
+  setLoading();
+  setTitle(`"${q}" araması`);
 
-  const url = `${BASE_URL}/search?q=${encodeURIComponent(
+  let url = `${BASE_URL}?apikey=${API_KEY}&country=tr&language=tr&q=${encodeURIComponent(
     q
-  )}&token=${API_KEY}&lang=tr&max=20`;
+  )}`;
 
   try {
     const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error("API hatası: " + res.status);
-    }
+    if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
-    renderArticles(data.articles);
+    if (data.status !== "success") throw new Error("API başarısız");
+    renderArticles(data.results);
   } catch (err) {
     console.error(err);
-    showError("Arama yapılamadı.");
-    if (feed) feed.innerHTML = "";
+    if (feed)
+      feed.innerHTML =
+        `<p style="padding:1rem;color:#d00;">Arama yapılamadı.</p>`;
   }
 }
 
-// ==== ETKİNLİKLER ====
-
-// kategoriye tıklama
+// sekme tıklama
 tabs.forEach((btn) => {
   btn.addEventListener("click", () => {
     tabs.forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
-    const cat = btn.dataset.cat; // gundem, spor ...
+    const cat = btn.dataset.cat;
     loadCategory(cat);
   });
 });
 
 // arama butonu
 if (searchBtn && searchInput) {
-  searchBtn.addEventListener("click", () => {
-    doSearch(searchInput.value);
-  });
-
-  // enter ile arama
+  searchBtn.addEventListener("click", () => doSearch(searchInput.value));
   searchInput.addEventListener("keyup", (e) => {
-    if (e.key === "Enter") {
-      doSearch(searchInput.value);
-    }
+    if (e.key === "Enter") doSearch(searchInput.value);
   });
 }
 
-// sayfa açılınca ilk haberleri getir
+// sayfa açılınca ilk yükleme
 document.addEventListener("DOMContentLoaded", () => {
+  // ilk sekmeyi aktif yap
+  const first = document.querySelector(".tab[data-cat='gundem']") || tabs[0];
+  if (first) first.classList.add("active");
   loadCategory("gundem");
 });
