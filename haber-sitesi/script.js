@@ -1,36 +1,38 @@
-// =========================
-//  HABERLERİ ÇEKEN JS
-//  provider: newsdata.io
-//  api key: KENDİ VERDİĞİN
-// =========================
+// ======================
+//  Haberlerim - script.js
+// ======================
 
 const API_KEY = "pub_ee04dcfcf6b54339b4bc667b529dea62";
 const BASE_URL = "https://newsdata.io/api/1/news";
 
-// HTML elemanları
-const tabs = document.querySelectorAll(".tab");
+// DOM elemanları
+const tabs = document.querySelectorAll("nav .tab");
 const feed = document.getElementById("feed");
 const feedTitle = document.getElementById("feedTitle");
+const errBox = document.getElementById("err");
 const searchInput = document.getElementById("q");
 const searchBtn = document.getElementById("searchBtn");
 
-// senin buton isimlerini newsdata kategorilerine çeviriyoruz
-const CATEGORY_MAP = {
-  gundem: "top",          // genel / top
-  spor: "sports",
-  teknoloji: "technology",
-  magazin: "entertainment",
-  saglik: "health",
-  bilim: "science"
-};
+// yıl
+const ySpan = document.getElementById("y");
+if (ySpan) ySpan.textContent = new Date().getFullYear();
 
 // küçük yardımcılar
 function setLoading() {
-  if (feed) feed.innerHTML = `<p style="padding:1rem;">Yükleniyor...</p>`;
+  if (feed) {
+    feed.innerHTML = `<p style="padding:1rem;">Yükleniyor…</p>`;
+  }
+  if (errBox) {
+    errBox.hidden = true;
+    errBox.textContent = "";
+  }
 }
 
-function setTitle(txt) {
-  if (feedTitle) feedTitle.textContent = txt;
+function showError(msg = "Haberler alınamadı.") {
+  if (errBox) {
+    errBox.hidden = false;
+    errBox.textContent = msg;
+  }
 }
 
 function formatDate(d) {
@@ -38,11 +40,10 @@ function formatDate(d) {
   return new Date(d).toLocaleString("tr-TR");
 }
 
-function renderArticles(list) {
+function renderNews(list) {
   if (!feed) return;
-
   if (!list || !list.length) {
-    feed.innerHTML = `<p style="padding:1rem;">Haber bulunamadı.</p>`;
+    feed.innerHTML = `<p style="padding:1rem;">Bu kategori için haber bulunamadı.</p>`;
     return;
   }
 
@@ -50,7 +51,7 @@ function renderArticles(list) {
     .map((item) => {
       const img =
         item.image_url ||
-        "https://via.placeholder.com/360x200?text=Haber"; // resim yoksa
+        "https://via.placeholder.com/900x450?text=Haber+G%C3%B6rseli";
       return `
         <article class="news-card">
           <div class="news-thumb">
@@ -64,7 +65,9 @@ function renderArticles(list) {
       )}
             </p>
             <p class="desc">${item.description || ""}</p>
-            <a class="read-more" href="${item.link}" target="_blank" rel="noopener">Habere git</a>
+            <a class="read-more" href="${item.link}" target="_blank" rel="noopener">
+              Habere git
+            </a>
           </div>
         </article>
       `;
@@ -74,91 +77,89 @@ function renderArticles(list) {
   feed.innerHTML = html;
 }
 
-// kategoriye göre çek
-async function loadCategory(cat = "gundem") {
+// asıl yükleyen fonksiyon
+async function loadNews({ category = "top", query = "" } = {}) {
   setLoading();
-  setTitle(cat.charAt(0).toUpperCase() + cat.slice(1));
 
-  const newsCat = CATEGORY_MAP[cat] || "top";
+  // başlık
+  if (query) {
+    feedTitle.textContent = `"${query}" sonuçları`;
+  } else {
+    // kategori adını Türkçe yaz
+    const map = {
+      top: "Gündem",
+      sports: "Spor",
+      technology: "Teknoloji",
+      entertainment: "Magazin",
+      health: "Sağlık",
+      science: "Bilim",
+    };
+    feedTitle.textContent = map[category] || "Haberler";
+  }
 
-  // newsdata.io kuyruk
+  // API adresi
   let url = `${BASE_URL}?apikey=${API_KEY}&country=tr&language=tr`;
-  if (newsCat) {
-    url += `&category=${newsCat}`;
+
+  // arama varsa kategori göndermeyebiliriz, daha çok sonuç gelir
+  if (query) {
+    url += `&q=${encodeURIComponent(query)}`;
+  } else if (category && category !== "top") {
+    // top zaten varsayılan
+    url += `&category=${category}`;
+  } else {
+    // gündem için de açıkça yazabiliriz
+    url += `&category=top`;
   }
 
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
-
-    if (data.status !== "success") {
-      throw new Error("API başarısız");
+    if (data.status !== "success") throw new Error("API yanıt vermedi");
+    renderNews(data.results);
+  } catch (e) {
+    console.error(e);
+    showError("Haberler alınamadı. Biraz sonra tekrar deneyin.");
+    if (feed) {
+      feed.innerHTML = "";
     }
-
-    renderArticles(data.results);
-  } catch (err) {
-    console.error(err);
-    if (feed)
-      feed.innerHTML =
-        `<p style="padding:1rem;color:#d00;">Haberler alınamadı. Daha sonra tekrar deneyin.</p>`;
   }
 }
 
-// arama
-async function doSearch(q) {
-  q = q.trim();
-  if (!q) {
-    // boşsa aktif sekmeyi tekrar yükle
-    const active = document.querySelector(".tab.active");
-    const currentCat = active ? active.dataset.cat : "gundem";
-    loadCategory(currentCat);
-    return;
-  }
-
-  setLoading();
-  setTitle(`"${q}" araması`);
-
-  let url = `${BASE_URL}?apikey=${API_KEY}&country=tr&language=tr&q=${encodeURIComponent(
-    q
-  )}`;
-
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const data = await res.json();
-    if (data.status !== "success") throw new Error("API başarısız");
-    renderArticles(data.results);
-  } catch (err) {
-    console.error(err);
-    if (feed)
-      feed.innerHTML =
-        `<p style="padding:1rem;color:#d00;">Arama yapılamadı.</p>`;
-  }
-}
-
-// sekme tıklama
+// sekmeler
 tabs.forEach((btn) => {
   btn.addEventListener("click", () => {
+    // aktifliği ayarla
     tabs.forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
-    const cat = btn.dataset.cat;
-    loadCategory(cat);
+
+    // arama kutusunu temizle
+    if (searchInput) searchInput.value = "";
+
+    const cat = btn.dataset.cat || "top";
+    loadNews({ category: cat });
   });
 });
 
-// arama butonu
+// arama
 if (searchBtn && searchInput) {
-  searchBtn.addEventListener("click", () => doSearch(searchInput.value));
+  searchBtn.addEventListener("click", () => {
+    const q = searchInput.value.trim();
+    // aramada sekme seçimini kaldır
+    tabs.forEach((b) => b.classList.remove("active"));
+    loadNews({ query: q });
+  });
+
   searchInput.addEventListener("keyup", (e) => {
-    if (e.key === "Enter") doSearch(searchInput.value);
+    if (e.key === "Enter") {
+      const q = searchInput.value.trim();
+      tabs.forEach((b) => b.classList.remove("active"));
+      loadNews({ query: q });
+    }
   });
 }
 
-// sayfa açılınca ilk yükleme
+// sayfa açılınca ilk gündem
 document.addEventListener("DOMContentLoaded", () => {
-  // ilk sekmeyi aktif yap
-  const first = document.querySelector(".tab[data-cat='gundem']") || tabs[0];
-  if (first) first.classList.add("active");
-  loadCategory("gundem");
+  loadNews({ category: "top" });
 });
