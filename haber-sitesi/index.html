@@ -3,61 +3,96 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Haberlerim - Güncel Gündem</title>
+  <title>Haberlerim - Güncel Haberler</title>
+  <meta name="description" content="Gündem, ekonomi, spor, teknoloji ve magazin haberleri. Güncel, özgün ve kullanıcı dostu haber sitesi.">
 
-  <!-- ✅ Google Search Console doğrulaması -->
-  <meta name="google-site-verification" content="YRabUztMdRkPNSPEiy2U9hwOxZw0MweT1b4zQAMle3k" />
-
-  <!-- ✅ Google AdSense -->
+  <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5803994489635087"
-     crossorigin="anonymous"></script>
-
-  <!-- ✅ Google Analytics (GA4) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9ENMRZ96VD"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-9ENMRZ96VD');
-  </script>
+    crossorigin="anonymous"></script>
 
   <link rel="stylesheet" href="style.css" />
 </head>
-
-<body>
-  <header>
-    <h1>📰 Haberlerim</h1>
-    <nav>
-      <button class="tab active" data-cat="top">Gündem</button>
-    </nav>
-    <div class="search-bar">
-      <input type="text" id="q" placeholder="Haber ara..." />
-      <button id="searchBtn">Ara</button>
+<body class="light">
+  <header class="topbar">
+    <div class="logo-area">
+      <span class="emoji">📰</span>
+      <div class="brand">
+        <h1>Haberlerim</h1>
+        <p>Tarafsız ve güncel haber</p>
+      </div>
     </div>
+    <button id="themeToggle" aria-label="Tema değiştir">🌙</button>
   </header>
 
-  <!-- ✅ Reklam Alanı -->
-  <div class="ads">
+  <nav class="nav">
+    <button class="nav-btn active" data-category="gundem">Gündem</button>
+    <button class="nav-btn" data-category="ekonomi">Ekonomi</button>
+    <button class="nav-btn" data-category="spor">Spor</button>
+    <button class="nav-btn" data-category="teknoloji">Teknoloji</button>
+    <button class="nav-btn" data-category="magazin">Magazin</button>
+  </nav>
+
+  <section class="search-section">
+    <input type="text" id="searchInput" placeholder="Haber ara..." />
+    <button id="searchBtn">Ara</button>
+  </section>
+
+  <section class="ad-section">
     <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-5803994489635087"
-         data-ad-slot="1234567890"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
+      style="display:block"
+      data-ad-client="ca-pub-5803994489635087"
+      data-ad-slot="1234567890"
+      data-ad-format="auto"
+      data-full-width-responsive="true"></ins>
     <script>
       (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
-  </div>
+  </section>
 
-  <main>
-    <h2 id="feedTitle">Gündem</h2>
-    <div id="err" hidden></div>
-    <div id="feed"></div>
+  <main class="container">
+    <section class="content" id="newsList"></section>
+
+    <aside class="sidebar">
+      <h2>Son Başlıklar</h2>
+      <ul id="lastTitles"></ul>
+
+      <div class="ad-box">
+        <ins class="adsbygoogle"
+          style="display:block"
+          data-ad-client="ca-pub-5803994489635087"
+          data-ad-slot="9876543210"
+          data-ad-format="auto"
+          data-full-width-responsive="true"></ins>
+        <script>
+          (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+      </div>
+    </aside>
   </main>
 
-  <footer>
-    <p>© <span id="y"></span> Haberlerim - Tüm hakları saklıdır.</p>
+  <footer class="footer">
+    <p>© <span id="year"></span> Haberlerim. Tüm hakları saklıdır.</p>
+    <div class="footer-links">
+      <a href="#gizlilik">Gizlilik Politikası</a>
+      <a href="#kullanim">Kullanım Şartları</a>
+      <a href="#iletisim">İletişim</a>
+    </div>
   </footer>
+
+  <section class="legal" id="gizlilik">
+    <h2>Gizlilik Politikası</h2>
+    <p>Bu site kullanıcı deneyimini geliştirmek ve reklam göstermek için çerez kullanabilir. Üçüncü taraf sağlayıcılar, kullanıcıların önceki ziyaretlerine göre reklam gösterebilir.</p>
+  </section>
+
+  <section class="legal" id="kullanim">
+    <h2>Kullanım Şartları</h2>
+    <p>Bu sitedeki içerikler bilgilendirme amaçlıdır. Kaynak gösterilmeden kopyalanması yasaktır.</p>
+  </section>
+
+  <section class="legal" id="iletisim">
+    <h2>İletişim</h2>
+    <p>İçerik kaldırma veya reklam teklifleri için: <strong>iletisim@haberlerim.site</strong></p>
+  </section>
 
   <script src="script.js"></script>
 </body>
