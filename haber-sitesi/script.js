@@ -1,165 +1,123 @@
-// ======================
-//  Haberlerim - script.js
-// ======================
+const newsData = [
+  {
+    id: 1,
+    title: "Ekonomide 2026 beklentileri açıklandı",
+    category: "ekonomi",
+    source: "Haberlerim",
+    date: "08.11.2025",
+    excerpt: "Uzmanlar 2026 yılında enflasyonda kademeli bir düşüş bekliyor.",
+    link: "#"
+  },
+  {
+    id: 2,
+    title: "Yeni elektrikli otobüs hatları yolda",
+    category: "gundem",
+    source: "Haberlerim",
+    date: "08.11.2025",
+    excerpt: "Belediye 50 yeni elektrikli araçla ulaşımı kolaylaştıracak.",
+    link: "#"
+  },
+  {
+    id: 3,
+    title: "Süper Lig’de derbi heyecanı",
+    category: "spor",
+    source: "Haberlerim Spor",
+    date: "07.11.2025",
+    excerpt: "Hafta sonu oynanacak derbi öncesi taraftarlar heyecanlı.",
+    link: "#"
+  },
+  {
+    id: 4,
+    title: "Yapay zekâ haberciliği dönüştürüyor",
+    category: "teknoloji",
+    source: "TeknoHaber",
+    date: "07.11.2025",
+    excerpt: "Yeni nesil haber üretim sistemleri devreye alındı.",
+    link: "#"
+  },
+  {
+    id: 5,
+    title: "Ünlü oyuncudan anlamlı bağış",
+    category: "magazin",
+    source: "Magazin Masası",
+    date: "07.11.2025",
+    excerpt: "Çocuk hastaneleri için destek kampanyası başlatıldı.",
+    link: "#"
+  }
+];
 
-const API_KEY = "pub_ee04dcfcf6b54339b4bc667b529dea62";
-const BASE_URL = "https://newsdata.io/api/1/news";
-
-// DOM elemanları
-const tabs = document.querySelectorAll("nav .tab");
-const feed = document.getElementById("feed");
-const feedTitle = document.getElementById("feedTitle");
-const errBox = document.getElementById("err");
-const searchInput = document.getElementById("q");
+const newsList = document.getElementById("newsList");
+const lastTitles = document.getElementById("lastTitles");
+const searchInput = document.getElementById("searchInput");
 const searchBtn = document.getElementById("searchBtn");
 
-// yıl
-const ySpan = document.getElementById("y");
-if (ySpan) ySpan.textContent = new Date().getFullYear();
+// Haberleri listele
+function renderNews(filterCategory = "", searchText = "") {
+  newsList.innerHTML = "";
+  const filtered = newsData.filter(item => {
+    const cat = filterCategory ? item.category === filterCategory : true;
+    const search = item.title.toLowerCase().includes(searchText.toLowerCase());
+    return cat && search;
+  });
 
-// küçük yardımcılar
-function setLoading() {
-  if (feed) {
-    feed.innerHTML = `<p style="padding:1rem;">Yükleniyor…</p>`;
-  }
-  if (errBox) {
-    errBox.hidden = true;
-    errBox.textContent = "";
-  }
-}
-
-function showError(msg = "Haberler alınamadı.") {
-  if (errBox) {
-    errBox.hidden = false;
-    errBox.textContent = msg;
-  }
-}
-
-function formatDate(d) {
-  if (!d) return "";
-  return new Date(d).toLocaleString("tr-TR");
-}
-
-function renderNews(list) {
-  if (!feed) return;
-  if (!list || !list.length) {
-    feed.innerHTML = `<p style="padding:1rem;">Bu kategori için haber bulunamadı.</p>`;
+  if (filtered.length === 0) {
+    newsList.innerHTML = "<p>Bu kategoride haber bulunamadı.</p>";
     return;
   }
 
-  const html = list
-    .map((item) => {
-      const img =
-        item.image_url ||
-        "https://via.placeholder.com/900x450?text=Haber+G%C3%B6rseli";
-      return `
-        <article class="news-card">
-          <div class="news-thumb">
-            <img src="${img}" alt="${item.title || ""}">
-          </div>
-          <div class="news-body">
-            <h3>${item.title || "Başlık yok"}</h3>
-            <p class="meta">
-              ${(item.source_id || "").toUpperCase()} • ${formatDate(
-        item.pubDate
-      )}
-            </p>
-            <p class="desc">${item.description || ""}</p>
-            <a class="read-more" href="${item.link}" target="_blank" rel="noopener">
-              Habere git
-            </a>
-          </div>
-        </article>
-      `;
-    })
-    .join("");
-
-  feed.innerHTML = html;
+  filtered.forEach(item => {
+    const card = document.createElement("article");
+    card.className = "news-card";
+    card.innerHTML = `
+      <h2>${item.title}</h2>
+      <div class="news-meta">${item.source} • ${item.date}</div>
+      <p>${item.excerpt}</p>
+      <a href="${item.link}">Habere git</a>
+    `;
+    newsList.appendChild(card);
+  });
 }
 
-// asıl yükleyen fonksiyon
-async function loadNews({ category = "top", query = "" } = {}) {
-  setLoading();
-
-  // başlık
-  if (query) {
-    feedTitle.textContent = `"${query}" sonuçları`;
-  } else {
-    // kategori adını Türkçe yaz
-    const map = {
-      top: "Gündem",
-      sports: "Spor",
-      technology: "Teknoloji",
-      entertainment: "Magazin",
-      health: "Sağlık",
-      science: "Bilim",
-    };
-    feedTitle.textContent = map[category] || "Haberler";
-  }
-
-  // API adresi
-  let url = `${BASE_URL}?apikey=${API_KEY}&country=tr&language=tr`;
-
-  // arama varsa kategori göndermeyebiliriz, daha çok sonuç gelir
-  if (query) {
-    url += `&q=${encodeURIComponent(query)}`;
-  } else if (category && category !== "top") {
-    // top zaten varsayılan
-    url += `&category=${category}`;
-  } else {
-    // gündem için de açıkça yazabiliriz
-    url += `&category=top`;
-  }
-
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const data = await res.json();
-    if (data.status !== "success") throw new Error("API yanıt vermedi");
-    renderNews(data.results);
-  } catch (e) {
-    console.error(e);
-    showError("Haberler alınamadı. Biraz sonra tekrar deneyin.");
-    if (feed) {
-      feed.innerHTML = "";
-    }
-  }
+// Son başlıklar
+function renderLastTitles() {
+  lastTitles.innerHTML = "";
+  newsData.slice(0, 5).forEach(item => {
+    const li = document.createElement("li");
+    li.textContent = item.title;
+    lastTitles.appendChild(li);
+  });
 }
 
-// sekmeler
-tabs.forEach((btn) => {
+// Kategoriler
+document.querySelectorAll(".nav-btn").forEach(btn => {
   btn.addEventListener("click", () => {
-    // aktifliği ayarla
-    tabs.forEach((b) => b.classList.remove("active"));
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
-
-    // arama kutusunu temizle
-    if (searchInput) searchInput.value = "";
-
-    const cat = btn.dataset.cat || "top";
-    loadNews({ category: cat });
+    renderNews(btn.dataset.category, searchInput.value);
   });
 });
 
-// arama
-if (searchBtn && searchInput) {
-  searchBtn.addEventListener("click", () => {
-    const q = searchInput.value.trim();
-    // aramada sekme seçimini kaldır
-    tabs.forEach((b) => b.classList.remove("active"));
-    loadNews({ query: q });
-  });
-
-  searchInput.addEventListener("keyup", (e) => {
-    if (e.key === "Enter") {
-      const q = searchInput.value.trim();
-      tabs.forEach((b) => b.classList.remove("active"));
-      loadNews({ query: q });
-    }
-  });
-}
-
-// sayfa açılınca ilk gündem
-document.addEventListener("DOMContentLoaded", () => {
-  loadNews({ category: "top" });
+// Arama
+searchBtn.addEventListener("click", () => {
+  const activeCat = document.querySelector(".nav-btn.active")?.dataset.category;
+  renderNews(activeCat, searchInput.value);
 });
+
+searchInput.addEventListener("keyup", e => {
+  if (e.key === "Enter") searchBtn.click();
+});
+
+// Tema
+const themeToggle = document.getElementById("themeToggle");
+themeToggle.addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+  document.body.classList.toggle("light");
+  themeToggle.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+});
+
+// Yıl
+document.getElementById("year").textContent = new Date().getFullYear();
+
+// Başlat
+renderNews("gundem");
+renderLastTitles();
