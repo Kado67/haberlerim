@@ -25,7 +25,6 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* topbar */
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -39,7 +38,6 @@ body {
 }
 body.dark .topbar {
   background: #16161d;
-  border-color: #111;
 }
 .brand-left {
   display: flex;
@@ -170,6 +168,7 @@ body.dark .topbar {
   padding-left: 18px;
 }
 
+/* legal & footer */
 .footer {
   text-align: center;
   padding: 20px 16px 30px;
@@ -180,8 +179,6 @@ body.dark .topbar {
   color: var(--accent);
   text-decoration: none;
 }
-
-/* legal */
 .legal {
   background: var(--bg-card);
   margin: 0 16px 14px;
