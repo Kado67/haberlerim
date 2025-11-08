@@ -4,12 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Haberlerim - Güncel ve Tarafsız Haberler</title>
-  <meta name="description" content="Haberlerim: Gündem, ekonomi, spor, teknoloji ve magazin haberleri. Güncel, tarafsız ve mobil uyumlu haber sitesi.">
-  <link rel="canonical" href="https://haberlerim-5asg.vercel.app" />
+  <meta name="description" content="Haberlerim: Gündem, ekonomi, spor, teknoloji ve magazin alanlarında otomatik güncellenen tarafsız haber sitesi.">
   <link rel="stylesheet" href="style.css" />
+
+  <!-- Yapısal veri (SEO / AdSense için daha temiz görünür) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "NewsMediaOrganization",
+    "name": "Haberlerim",
+    "url": "https://seninsiteadresin.com",
+    "description": "Güncel ve tarafsız haber yayını.",
+    "language": "tr-TR"
+  }
+  </script>
 </head>
 <body class="light">
-  <!-- Üst bar -->
   <header class="topbar">
     <div class="brand-left">
       <span class="logo-emoji">📰</span>
@@ -25,7 +35,6 @@
     </div>
   </header>
 
-  <!-- Kategoriler -->
   <nav class="nav">
     <button class="nav-btn active" data-category="hepsi">Tümü</button>
     <button class="nav-btn" data-category="gundem">Gündem</button>
@@ -35,18 +44,16 @@
     <button class="nav-btn" data-category="magazin">Magazin</button>
   </nav>
 
-  <!-- Arama -->
   <section class="search-section">
     <input type="text" id="searchInput" placeholder="Haber ara..." />
     <button id="searchBtn">Ara</button>
   </section>
 
-  <!-- Ana içerik -->
   <main class="container">
-    <!-- Haber listesi -->
-    <section class="content" id="newsList"></section>
+    <section class="content" id="newsList">
+      <p>Haberler yükleniyor...</p>
+    </section>
 
-    <!-- Yan panel -->
     <aside class="sidebar">
       <div class="card">
         <h2>Son Başlıklar</h2>
@@ -55,7 +62,6 @@
     </aside>
   </main>
 
-  <!-- Alt bilgi -->
   <footer class="footer">
     <p>© <span id="year"></span> Haberlerim. Tüm hakları saklıdır.</p>
     <p class="footer-links">
@@ -65,18 +71,17 @@
     </p>
   </footer>
 
-  <!-- Yasal içerik -->
   <section class="legal" id="gizlilik">
     <h2>Gizlilik Politikası</h2>
-    <p>Bu site, ziyaretçilere daha iyi hizmet verebilmek için temel kullanım verilerini toplayabilir. Kişisel veriler izinsiz paylaşılmaz.</p>
+    <p>Bu site kullanıcı deneyimini iyileştirmek ve güvenliği sağlamak için temel düzeyde anonim veriler toplayabilir. Kişisel veriler izinsiz paylaşılmaz.</p>
   </section>
   <section class="legal" id="kullanim">
     <h2>Kullanım Şartları</h2>
-    <p>Yayımlanan haberlerin izinsiz kopyalanması veya ticari amaçla kullanılması yasaktır. Kaynak gösterilerek alıntı yapılabilir.</p>
+    <p>Yayımlanan içerikler bilgilendirme amaçlıdır. İçeriklerin izinsiz kopyalanması veya ticari amaçla kullanılması yasaktır.</p>
   </section>
   <section class="legal" id="iletisim">
     <h2>İletişim</h2>
-    <p>İçerik kaldırma, telif veya işbirliği için: <strong>iletisim@haberlerim.site</strong></p>
+    <p>İçerik kaldırma veya reklam talepleriniz için: <strong>iletisim@haberlerim.site</strong></p>
   </section>
 
   <!-- Haber Detay Modal -->
