@@ -3,59 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Haberlerim - Güncel, Tarafsız ve Güvenilir Haberler</title>
-  <meta name="description" content="Haberlerim: Gündem, ekonomi, spor, teknoloji ve magazin alanlarında güncel ve tarafsız haberler. Mobil uyumlu, hızlı ve reklam uyumlu haber sitesi.">
+  <title>Haberlerim - Güncel ve Tarafsız Haberler</title>
+  <meta name="description" content="Haberlerim: Gündem, ekonomi, spor, teknoloji ve magazin haberleri. Güncel, tarafsız ve mobil uyumlu haber sitesi.">
   <link rel="canonical" href="https://haberlerim-5asg.vercel.app" />
-
-  <!-- Google AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5803994489635087"
-    crossorigin="anonymous"></script>
-
-  <!-- Structured Data (Google News / AdSense için iyi) -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "NewsMediaOrganization",
-    "name": "Haberlerim",
-    "url": "https://haberlerim-5asg.vercel.app",
-    "logo": "https://haberlerim-5asg.vercel.app/logo.png",
-    "description": "Gündem, ekonomi, spor, teknoloji ve magazin haberleri."
-  }
-  </script>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    "itemListElement": [
-      {
-        "@type": "NewsArticle",
-        "headline": "Yeni Elektrikli Otobüs Hatları Yolda",
-        "datePublished": "2025-11-08",
-        "author": "Haberlerim",
-        "url": "https://haberlerim-5asg.vercel.app"
-      },
-      {
-        "@type": "NewsArticle",
-        "headline": "Ekonomide 2026 Beklentileri Açıklandı",
-        "datePublished": "2025-11-08",
-        "author": "Haberlerim",
-        "url": "https://haberlerim-5asg.vercel.app"
-      },
-      {
-        "@type": "NewsArticle",
-        "headline": "Yapay Zekâ Haberciliği Dönüştürüyor",
-        "datePublished": "2025-11-07",
-        "author": "Haberlerim",
-        "url": "https://haberlerim-5asg.vercel.app"
-      }
-    ]
-  }
-  </script>
-
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="light">
-  <!-- Üst Bar -->
+  <!-- Üst bar -->
   <header class="topbar">
     <div class="brand-left">
       <span class="logo-emoji">📰</span>
@@ -73,7 +27,8 @@
 
   <!-- Kategoriler -->
   <nav class="nav">
-    <button class="nav-btn active" data-category="gundem">Gündem</button>
+    <button class="nav-btn active" data-category="hepsi">Tümü</button>
+    <button class="nav-btn" data-category="gundem">Gündem</button>
     <button class="nav-btn" data-category="ekonomi">Ekonomi</button>
     <button class="nav-btn" data-category="spor">Spor</button>
     <button class="nav-btn" data-category="teknoloji">Teknoloji</button>
@@ -86,44 +41,16 @@
     <button id="searchBtn">Ara</button>
   </section>
 
-  <!-- Üst Reklam Alanı -->
-  <section class="ad-section">
-    <ins class="adsbygoogle"
-      style="display:block"
-      data-ad-client="ca-pub-5803994489635087"
-      data-ad-slot="1234567890"
-      data-ad-format="auto"
-      data-full-width-responsive="true"></ins>
-    <script>
-      (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-  </section>
-
   <!-- Ana içerik -->
   <main class="container">
-    <!-- Sol taraf: Haberler -->
-    <section class="content" id="newsList">
-      <!-- JS ile doldurulacak -->
-    </section>
+    <!-- Haber listesi -->
+    <section class="content" id="newsList"></section>
 
-    <!-- Sağ taraf: Son başlıklar + reklam -->
+    <!-- Yan panel -->
     <aside class="sidebar">
       <div class="card">
         <h2>Son Başlıklar</h2>
         <ul id="lastTitles"></ul>
-      </div>
-
-      <div class="card">
-        <h2>Reklam</h2>
-        <ins class="adsbygoogle"
-          style="display:block"
-          data-ad-client="ca-pub-5803994489635087"
-          data-ad-slot="9876543210"
-          data-ad-format="auto"
-          data-full-width-responsive="true"></ins>
-        <script>
-          (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
       </div>
     </aside>
   </main>
@@ -138,18 +65,18 @@
     </p>
   </footer>
 
-  <!-- Yasal içerik (sayfayı dolu gösterir, AdSense sever) -->
+  <!-- Yasal içerik -->
   <section class="legal" id="gizlilik">
     <h2>Gizlilik Politikası</h2>
-    <p>Bu site kullanıcı deneyimini iyileştirmek ve reklamları yönetmek için çerez kullanabilir. Kullanıcılar dilerse tarayıcı ayarlarından çerezleri kapatabilir. Üçüncü taraf reklam sağlayıcıları, ziyaretçilerin önceki ziyaretlerine göre reklam gösterebilir.</p>
+    <p>Bu site, ziyaretçilere daha iyi hizmet verebilmek için temel kullanım verilerini toplayabilir. Kişisel veriler izinsiz paylaşılmaz.</p>
   </section>
   <section class="legal" id="kullanim">
     <h2>Kullanım Şartları</h2>
-    <p>Bu sitede yer alan içerikler bilgilendirme amaçlıdır. Kaynak gösterilmeden kopyalanması ve ticari amaçla kullanılması yasaktır. Haberler editoryal kontrolden geçirilir.</p>
+    <p>Yayımlanan haberlerin izinsiz kopyalanması veya ticari amaçla kullanılması yasaktır. Kaynak gösterilerek alıntı yapılabilir.</p>
   </section>
   <section class="legal" id="iletisim">
     <h2>İletişim</h2>
-    <p>Reklam, işbirliği veya içerik bildirimleri için: <strong>iletisim@haberlerim.site</strong></p>
+    <p>İçerik kaldırma, telif veya işbirliği için: <strong>iletisim@haberlerim.site</strong></p>
   </section>
 
   <!-- Haber Detay Modal -->
@@ -159,18 +86,6 @@
       <h1 id="modalTitle"></h1>
       <p id="modalMeta" class="news-meta"></p>
       <p id="modalText"></p>
-      <!-- Detay içinde de reklam -->
-      <div class="inside-ad">
-        <ins class="adsbygoogle"
-          style="display:block"
-          data-ad-client="ca-pub-5803994489635087"
-          data-ad-slot="1122334455"
-          data-ad-format="auto"
-          data-full-width-responsive="true"></ins>
-        <script>
-          (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
-      </div>
     </div>
   </div>
 
