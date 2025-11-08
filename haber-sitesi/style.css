@@ -36,37 +36,19 @@ body {
   top: 0;
   z-index: 50;
 }
-body.dark .topbar {
-  background: #16161d;
-}
+body.dark .topbar { background: #16161d; }
+
 .brand-left {
   display: flex;
   gap: 10px;
   align-items: center;
 }
-.logo-emoji {
-  font-size: 28px;
-}
-.brand-text h1 {
-  margin: 0;
-  font-size: 20px;
-}
-.brand-text p {
-  margin: 0;
-  font-size: 12px;
-  color: var(--muted);
-}
-.top-actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-.live-dot {
-  width: 9px;
-  height: 9px;
-  background: red;
-  border-radius: 50%;
-}
+.logo-emoji { font-size: 28px; }
+.brand-text h1 { margin: 0; font-size: 20px; }
+.brand-text p { margin: 0; font-size: 12px; color: var(--muted); }
+
+.top-actions { display: flex; gap: 10px; align-items: center; }
+.live-dot { width: 9px; height: 9px; background: red; border-radius: 50%; }
 #themeToggle {
   background: transparent;
   border: 1px solid rgba(0,0,0,.15);
@@ -140,23 +122,10 @@ body.dark .topbar {
   padding: 14px 14px 16px;
   box-shadow: 0 1px 3px rgba(0,0,0,.03);
 }
-.news-card h2 {
-  margin-top: 0;
-  font-size: 19px;
-}
-.news-meta {
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 8px;
-}
-.news-card p {
-  margin-bottom: 8px;
-}
-.news-card a {
-  color: var(--accent);
-  text-decoration: none;
-  font-weight: 600;
-}
+.news-card h2 { margin-top: 0; font-size: 19px; }
+.news-meta { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.news-card p { margin-bottom: 8px; }
+.news-card a { color: var(--accent); text-decoration: none; font-weight: 600; }
 
 /* sidebar */
 .sidebar .card {
@@ -164,9 +133,7 @@ body.dark .topbar {
   border-radius: 12px;
   padding: 14px;
 }
-.sidebar ul {
-  padding-left: 18px;
-}
+.sidebar ul { padding-left: 18px; }
 
 /* legal & footer */
 .footer {
@@ -175,10 +142,8 @@ body.dark .topbar {
   font-size: 13px;
   color: var(--muted);
 }
-.footer a {
-  color: var(--accent);
-  text-decoration: none;
-}
+.footer a { color: var(--accent); text-decoration: none; }
+
 .legal {
   background: var(--bg-card);
   margin: 0 16px 14px;
