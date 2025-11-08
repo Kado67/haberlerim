@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Haberlerim - Güncel Haberler</title>
-  <meta name="description" content="Gündem, ekonomi, spor, teknoloji ve magazin haberleri. Güncel, özgün ve kullanıcı dostu haber sitesi.">
+  <title>Haberlerim - Güncel ve Tarafsız Haberler</title>
+  <meta name="description" content="Gündem, ekonomi, spor, teknoloji ve magazin haberleri. Tarafsız, özgün ve güncel içerikler.">
 
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5803994489635087"
@@ -21,7 +21,7 @@
         <p>Tarafsız ve güncel haber</p>
       </div>
     </div>
-    <button id="themeToggle" aria-label="Tema değiştir">🌙</button>
+    <button id="themeToggle">🌙</button>
   </header>
 
   <nav class="nav">
@@ -37,62 +37,27 @@
     <button id="searchBtn">Ara</button>
   </section>
 
-  <section class="ad-section">
-    <ins class="adsbygoogle"
-      style="display:block"
-      data-ad-client="ca-pub-5803994489635087"
-      data-ad-slot="1234567890"
-      data-ad-format="auto"
-      data-full-width-responsive="true"></ins>
-    <script>
-      (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-  </section>
-
   <main class="container">
     <section class="content" id="newsList"></section>
-
     <aside class="sidebar">
       <h2>Son Başlıklar</h2>
       <ul id="lastTitles"></ul>
-
-      <div class="ad-box">
-        <ins class="adsbygoogle"
-          style="display:block"
-          data-ad-client="ca-pub-5803994489635087"
-          data-ad-slot="9876543210"
-          data-ad-format="auto"
-          data-full-width-responsive="true"></ins>
-        <script>
-          (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
-      </div>
     </aside>
   </main>
 
   <footer class="footer">
     <p>© <span id="year"></span> Haberlerim. Tüm hakları saklıdır.</p>
-    <div class="footer-links">
-      <a href="#gizlilik">Gizlilik Politikası</a>
-      <a href="#kullanim">Kullanım Şartları</a>
-      <a href="#iletisim">İletişim</a>
-    </div>
   </footer>
 
-  <section class="legal" id="gizlilik">
-    <h2>Gizlilik Politikası</h2>
-    <p>Bu site kullanıcı deneyimini geliştirmek ve reklam göstermek için çerez kullanabilir. Üçüncü taraf sağlayıcılar, kullanıcıların önceki ziyaretlerine göre reklam gösterebilir.</p>
-  </section>
-
-  <section class="legal" id="kullanim">
-    <h2>Kullanım Şartları</h2>
-    <p>Bu sitedeki içerikler bilgilendirme amaçlıdır. Kaynak gösterilmeden kopyalanması yasaktır.</p>
-  </section>
-
-  <section class="legal" id="iletisim">
-    <h2>İletişim</h2>
-    <p>İçerik kaldırma veya reklam teklifleri için: <strong>iletisim@haberlerim.site</strong></p>
-  </section>
+  <!-- Haber Detay Popup -->
+  <div id="newsModal" class="modal">
+    <div class="modal-content">
+      <span id="closeModal">&times;</span>
+      <h1 id="modalTitle"></h1>
+      <p class="news-meta" id="modalMeta"></p>
+      <p id="modalText"></p>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
