@@ -1,233 +1,187 @@
-/* ===========================
-   HABERLERİM - SON SÜRÜM CSS
-   =========================== */
+:root {
+  --bg: #f5f5f5;
+  --bg-card: #ffffff;
+  --text: #222;
+  --accent: #c70000;
+  --muted: #777;
+}
 
-/* GENEL */
+body.dark {
+  --bg: #101014;
+  --bg-card: #1c1c22;
+  --text: #f5f5f5;
+  --accent: #ff5b5b;
+  --muted: #bbb;
+}
+
 * {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
+
 body {
-  background: #f4f4f4;
-  font-family: "Segoe UI", Arial, sans-serif;
-  color: #222;
-  line-height: 1.5;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, sans-serif;
 }
 
-/* HEADER */
-header {
-  background: #fff;
-  border-bottom: 3px solid #c90000;
-  padding: 15px;
-}
-header h1 {
-  font-size: 26px;
-  font-weight: 700;
+.topbar {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 6px;
-}
-header h1::before {
-  content: "🗞️";
-  font-size: 25px;
-}
-
-/* MENÜ */
-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-}
-nav .tab {
-  background: #c90000;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 8px 18px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-nav .tab.active {
+  padding: 12px 16px;
   background: #fff;
-  color: #c90000;
-  border: 1px solid #c90000;
-  font-weight: 600;
-}
-nav .tab:hover {
-  opacity: 0.85;
+  border-bottom: 1px solid #ddd;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
-/* ARAMA */
-.search-bar {
-  margin-top: 12px;
+body.dark .topbar {
+  background: #18181f;
+  border-color: #222;
+}
+
+.logo-area {
   display: flex;
-  gap: 8px;
+  gap: 10px;
+  align-items: center;
 }
-.search-bar input {
+
+.logo-area .emoji {
+  font-size: 26px;
+}
+
+#themeToggle {
+  background: transparent;
+  border: 1px solid #999;
+  border-radius: 50%;
+  padding: 6px;
+  cursor: pointer;
+}
+
+.nav {
+  display: flex;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--bg);
+  overflow-x: auto;
+}
+
+.nav-btn {
+  background: transparent;
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
+  padding: 6px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.nav-btn.active,
+.nav-btn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.search-section {
+  display: flex;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--bg);
+}
+
+.search-section input {
   flex: 1;
+  padding: 8px 10px;
+  border-radius: 6px;
   border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 8px 12px;
+  background: #fff;
 }
-.search-bar button {
+
+.search-section button {
   background: #007bff;
   border: none;
   color: #fff;
-  border-radius: 4px;
-  padding: 8px 18px;
+  padding: 8px 14px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
-}
-.search-bar button:hover {
-  background: #005ec2;
 }
 
-/* ANA KISIM */
-main {
-  max-width: 1100px;
-  margin: 25px auto;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 18px;
+.ad-section {
+  padding: 10px 16px;
 }
 
-/* BAŞLIK */
-#feedTitle,
-h2 {
-  font-size: 22px;
-  font-weight: 700;
-  border-bottom: 2px solid #c90000;
-  padding-bottom: 5px;
-  margin-bottom: 16px;
-  color: #111;
-}
-
-/* HABERLER GRID */
-#feed {
+.container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 20px;
+  grid-template-columns: 1.6fr 0.8fr;
+  gap: 16px;
+  padding: 16px;
 }
 
-/* HABER KARTLARI */
-.article,
-.news-item,
-#feed > div {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  overflow: hidden;
+.content {
   display: flex;
   flex-direction: column;
-  transition: 0.25s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-}
-.article:hover,
-.news-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
+  gap: 16px;
 }
 
-/* HABER GÖRSELİ */
-.article img,
-.news-item img,
-#feed img,
-main img {
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-  display: block;
-  border-bottom: 1px solid #ddd;
+.news-card {
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-/* HABER METİNİ */
-.article-body,
-.news-content,
-#feed > div div {
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
+.news-card h2 {
+  margin-top: 0;
 }
 
-.article-title,
-.news-title {
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.3;
-  color: #000;
-}
-
-.article-meta,
 .news-meta {
-  font-size: 11px;
-  color: #777;
-}
-
-.article-desc,
-.news-desc {
-  font-size: 13px;
-  color: #333;
-  line-height: 1.4;
-}
-
-.article a,
-.news-link {
-  color: #007bff;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-  margin-top: auto;
-}
-.article a:hover,
-.news-link:hover {
-  text-decoration: underline;
-}
-
-/* HATA MESAJI */
-#error {
-  background: #ffe5e5;
-  border: 1px solid #f3b8b8;
-  color: #a80000;
-  padding: 8px 12px;
-  border-radius: 4px;
-  margin-bottom: 10px;
-}
-
-/* ALT KISIM */
-footer {
-  text-align: center;
   font-size: 12px;
-  color: #666;
-  margin: 25px 0;
+  color: var(--muted);
+  margin-bottom: 8px;
 }
 
-/* MOBİL UYUMLU */
-@media (max-width: 768px) {
-  main {
-    padding: 10px;
-    border-radius: 0;
-  }
+.news-card a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
 
-  nav {
-    overflow-x: auto;
-  }
+.sidebar {
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 14px;
+  height: fit-content;
+}
 
-  #feed {
+.footer {
+  text-align: center;
+  padding: 20px 16px;
+  background: var(--bg);
+  font-size: 13px;
+}
+
+.footer-links {
+  margin-top: 6px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.legal {
+  background: var(--bg-card);
+  margin: 16px;
+  padding: 16px;
+  border-radius: 10px;
+}
+
+@media (max-width: 992px) {
+  .container {
     grid-template-columns: 1fr;
-  }
-
-  .article img,
-  main img {
-    height: 200px;
-  }
-
-  .article-body {
-    padding: 10px 12px;
   }
 }
