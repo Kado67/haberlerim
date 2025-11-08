@@ -25,7 +25,7 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* Topbar */
+/* topbar */
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -35,13 +35,12 @@ body {
   border-bottom: 1px solid #ddd;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 50;
 }
 body.dark .topbar {
-  background: #17171d;
+  background: #16161d;
   border-color: #111;
 }
-
 .brand-left {
   display: flex;
   gap: 10px;
@@ -59,22 +58,16 @@ body.dark .topbar {
   font-size: 12px;
   color: var(--muted);
 }
-
 .top-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
 }
 .live-dot {
-  width: 10px;
-  height: 10px;
-  background: #ff0000;
+  width: 9px;
+  height: 9px;
+  background: red;
   border-radius: 50%;
-  animation: pulse 1.3s infinite;
-}
-@keyframes pulse {
-  0% {transform: scale(1); opacity: 1;}
-  100% {transform: scale(1.8); opacity: 0;}
 }
 #themeToggle {
   background: transparent;
@@ -82,24 +75,22 @@ body.dark .topbar {
   border-radius: 50%;
   padding: 6px;
   cursor: pointer;
-  font-size: 16px;
 }
 
-/* Nav */
+/* nav */
 .nav {
   display: flex;
   gap: 10px;
-  padding: 10px 16px;
+  padding: 10px 16px 6px;
   background: var(--bg);
   overflow-x: auto;
 }
 .nav-btn {
   background: transparent;
-  border: 1.5px solid var(--accent);
+  border: 1.4px solid var(--accent);
   color: var(--accent);
   padding: 6px 12px;
   border-radius: 999px;
-  font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -109,11 +100,11 @@ body.dark .topbar {
   color: #fff;
 }
 
-/* Search */
+/* search */
 .search-section {
   display: flex;
   gap: 10px;
-  padding: 10px 16px;
+  padding: 8px 16px 12px;
 }
 .search-section input {
   flex: 1;
@@ -122,55 +113,46 @@ body.dark .topbar {
   border: 1px solid #ccc;
   background: #fff;
 }
-body.dark .search-section input {
-  background: #0d0d10;
-  border: 1px solid #222;
-  color: #fff;
-}
 .search-section button {
   background: #007bff;
-  color: #fff;
   border: none;
-  border-radius: 8px;
+  color: #fff;
   padding: 8px 14px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
-/* Ad section */
-.ad-section {
-  padding: 10px 16px;
-}
-
-/* Layout */
+/* layout */
 .container {
   display: grid;
-  grid-template-columns: 1.5fr 0.7fr;
+  grid-template-columns: 1.5fr 0.6fr;
   gap: 16px;
-  padding: 16px;
+  padding: 0 16px 16px;
 }
 
-/* News list */
+/* content */
 .content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 .news-card {
   background: var(--bg-card);
   border-radius: 12px;
-  padding: 16px;
+  padding: 14px 14px 16px;
   box-shadow: 0 1px 3px rgba(0,0,0,.03);
 }
 .news-card h2 {
   margin-top: 0;
+  font-size: 19px;
 }
 .news-meta {
   font-size: 12px;
   color: var(--muted);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 .news-card p {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 .news-card a {
   color: var(--accent);
@@ -178,39 +160,19 @@ body.dark .search-section input {
   font-weight: 600;
 }
 
-/* Sidebar */
-.sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.card {
+/* sidebar */
+.sidebar .card {
   background: var(--bg-card);
   border-radius: 12px;
   padding: 14px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.03);
 }
-.card h2 {
-  margin-top: 0;
-  font-size: 16px;
-}
-#lastTitles {
-  margin: 0;
-  padding-left: 20px;
+.sidebar ul {
+  padding-left: 18px;
 }
 
-/* Legal */
-.legal {
-  background: var(--bg-card);
-  margin: 16px;
-  padding: 16px;
-  border-radius: 12px;
-}
-
-/* Footer */
 .footer {
   text-align: center;
-  padding: 20px 16px 40px;
+  padding: 20px 16px 30px;
   font-size: 13px;
   color: var(--muted);
 }
@@ -219,13 +181,21 @@ body.dark .search-section input {
   text-decoration: none;
 }
 
-/* Modal */
+/* legal */
+.legal {
+  background: var(--bg-card);
+  margin: 0 16px 14px;
+  padding: 14px;
+  border-radius: 10px;
+}
+
+/* modal */
 .modal {
   display: none;
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,.7);
-  z-index: 200;
+  z-index: 99;
   justify-content: center;
   align-items: center;
   padding: 20px;
@@ -234,25 +204,22 @@ body.dark .search-section input {
   background: var(--bg-card);
   color: var(--text);
   padding: 20px;
-  border-radius: 14px;
-  width: min(800px, 100%);
+  border-radius: 10px;
+  width: min(750px, 100%);
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
 }
 .close-btn {
   position: absolute;
-  right: 16px;
-  top: 12px;
+  right: 14px;
+  top: 10px;
   font-size: 22px;
   cursor: pointer;
 }
-.inside-ad {
-  margin-top: 16px;
-}
 
-/* Responsive */
-@media (max-width: 992px) {
+/* responsive */
+@media (max-width: 900px) {
   .container {
     grid-template-columns: 1fr;
   }
